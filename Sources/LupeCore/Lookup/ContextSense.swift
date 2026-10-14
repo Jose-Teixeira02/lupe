@@ -197,15 +197,20 @@ extension LookupEngine {
             // ("zu spät kommen", "zu spät sein").
             guard var first = spanTokens.first(where: { !Stopwords.de.contains(Lexicon.fold($0.text)) }) ?? spanTokens.first else { continue }
             var phraseTokens = spanTokens.filter { $0.range.lowerBound >= first.range.lowerBound }
-            if let i = germanTokens.firstIndex(of: first), i > 0, Lexicon.fold(germanTokens[i - 1].text) == "zu",
+            let isNoun = first.isCapitalized && first.range.lowerBound != germanTokens.first?.range.lowerBound
+                || lexicon.bestEntry(forGerman: first.text, capitalized: true)?.pos == .noun && first.isCapitalized
+            // Keep the little word that makes the phrase: "zu spät", "am Ende", "im Moment".
+            let leaders: Set<String> = isNoun ? ["am", "im", "zum", "zur", "beim", "vom", "ins", "ans"] : ["zu"]
+            if let i = germanTokens.firstIndex(of: first), i > 0, leaders.contains(Lexicon.fold(germanTokens[i - 1].text)),
                !phraseTokens.contains(germanTokens[i - 1]) {
                 first = germanTokens[i - 1]
                 phraseTokens.insert(first, at: 0)
             }
             var german = phraseTokens.map(\.text).joined(separator: " ")
-            let isNoun = phraseTokens.first.map { $0.isCapitalized && lexicon.bestEntry(forGerman: $0.text, capitalized: true)?.pos == .noun } ?? false
-            if !isNoun { german = german.prefix(1).lowercased() + german.dropFirst() }
-            if token.wordClass == .verb {
+            if !isNoun || first.wordClass != .noun && !first.isCapitalized { german = german.prefix(1).lowercased() + german.dropFirst() }
+            if isNoun { german = phraseTokens.map(\.text).joined(separator: " ") }
+            // Only adjective/adverb phrases get the sentence's verb ("zu spät kommen"); "am Ende" stands alone.
+            if token.wordClass == .verb, !isNoun {
                 // The verb of the same translated sentence, nearest to the phrase ("ich komme … zu spät" → kommen).
                 let sentence = TextTools.sentence(in: at.text, containing: first.range)
                 let sentenceRange = at.text.range(of: sentence) ?? at.text.startIndex..<at.text.endIndex

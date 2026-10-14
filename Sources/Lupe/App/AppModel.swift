@@ -134,7 +134,8 @@ final class AppModel: ObservableObject {
     /// expression in this sentence, the expression is what gets saved.
     @discardableResult
     func save(_ r: LookupResult, source: CardSource, app: String?) -> (card: Card, created: Bool) {
-        if let ex = r.expression {
+        // Pack phrases and verb-less expressions ("zu spät kommen") become phrase cards; "warten (auf)" stays a verb card.
+        if let ex = r.expression, ex.origin == .pack || ex.entry == nil {
             var meanings: [String: String] = [:]
             if let e = ex.entry, e.pos == .phrase {
                 for h in settings.helpers { if let g = e.glossList(h, limit: 2).nilIfEmpty { meanings[h] = g } }

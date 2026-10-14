@@ -151,7 +151,7 @@ public final class LookupEngine: @unchecked Sendable {
         // The sense used here picks the homograph and orders the meanings ("Bank" → bench, not bank).
         var senseHere: String?
         var senseIndex: Int?
-        if let aligned = translation?.aligned, !aligned.isEmpty, let e = entry {
+        if let aligned = translation?.aligned.map(Self.trimFunctionWords), !aligned.isEmpty, let e = entry {
             senseHere = aligned
             let (best, index) = homograph(for: e, word: word, lemma: token?.lemma, aligned: aligned)
             entry = best
@@ -274,10 +274,10 @@ public final class LookupEngine: @unchecked Sendable {
         if var e = chosen {
             if (e.glosses[primaryHelper] ?? []).isEmpty {
                 // Synthesized entry (compound or translator word): describe it with the source word.
-                for h in helpers where h != language {
+                for h in helpers {
                     if let t = try? await translator.translate(e.lemma, from: target, to: h) { e.glosses[h] = [Self.wordGloss(t)] }
                 }
-                e.glosses[language] = [token?.lemma ?? word]
+                if (e.glosses[language] ?? []).isEmpty { e.glosses[language] = [token?.lemma ?? word] }
                 chosen = e
             }
             headword = lexicon.display(e)
@@ -318,6 +318,16 @@ public final class LookupEngine: @unchecked Sendable {
                             confirmedByContext: confirmed, compoundHead: head, expression: expression)
     }
 
+    /// "delays will" → "delays", "to the station" → "station": the words that carry the meaning.
+    static func trimFunctionWords(_ s: String) -> String {
+        let function: Set<String> = Stopwords.en.union(["will", "would", "has", "have", "had", "is", "are", "was", "were", "be", "been",
+                                                          "do", "does", "did", "shall", "should", "can", "could"])
+        var words = s.split(separator: " ").map(String.init)
+        while words.count > 1, let first = words.first, function.contains(first.lowercased()) { words.removeFirst() }
+        while words.count > 1, let last = words.last, function.contains(last.lowercased()) { words.removeLast() }
+        return words.joined(separator: " ")
+    }
+
     /// Gender of a German noun outside the pack, by translating "the <English meaning>" back into German.
     func guessGender(of noun: String, english: String) async -> Gender? {
         let gloss = english.split(separator: ",").first.map(String.init)?.trimmingCharacters(in: .whitespaces) ?? english
@@ -335,7 +345,8 @@ public final class LookupEngine: @unchecked Sendable {
 
     /// Machine translations of single words come back capitalised ("Porta da frente"); glosses read better lowercased.
     static func wordGloss(_ t: String) -> String {
-        let trimmed = TextTools.clean(t)
+        let trimmed = TextTools.clean(t.unicodeScalars.filter { !["\u{200B}", "\u{200C}", "\u{200D}", "\u{FEFF}"].contains($0) }
+            .map(String.init).joined()).split(separator: " ").joined(separator: " ")
         guard let first = trimmed.first, first.isUppercase else { return trimmed }
         // Keep names ("Berlin"), lowercase ordinary words ("Polegar" → "polegar").
         if TextTools.isName(trimmed) { return trimmed }

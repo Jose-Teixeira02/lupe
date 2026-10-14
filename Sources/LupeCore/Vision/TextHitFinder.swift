@@ -96,11 +96,24 @@ public enum TextHitFinder {
         let wordOffsetInLine = part.offset + line.text.distance(from: line.text.startIndex, to: word.range.lowerBound)
 
         // Paragraph: neighbouring visual lines with similar left edge and small vertical gaps.
-        let lineHeight = visual[pos].rect.height
         func related(_ a: VisualLine, _ b: VisualLine) -> Bool {
             let gap = a.rect.minY - b.rect.maxY // a above b
             let leftAligned = abs(a.rect.minX - b.rect.minX) < 0.04 || a.rect.minX < b.rect.maxX && b.rect.minX < a.rect.maxX
-            return gap > -lineHeight * 0.5 && gap < lineHeight * 0.9 && leftAligned
+            // Lines of one paragraph sit close together; a heading has a bigger gap below it. OCR line heights
+            // vary a lot with descenders, so compare the gap with the smaller line and only reject huge size jumps
+            // (a ruler or a caption next to body text).
+            let h = min(a.rect.height, b.rect.height)
+            // Average character width tracks font size without the descender noise of box heights.
+            let charWidth = { (v: VisualLine) in v.rect.width / CGFloat(max(v.text.count, 1)) }
+            let size = charWidth(a) / max(charWidth(b), 0.000001)
+            let shortLine = min(a.text.count, b.text.count) < 12 // too few characters to judge size
+            let sameSize = shortLine || (size > 0.78 && size < 1.28)
+            // Wrapped lines inside a paragraph run (nearly) full width. A clearly narrower line above with no
+            // closing punctuation is a heading, a label or a ruler, not the start of this sentence.
+            let ending = a.text.trimmingCharacters(in: .whitespaces).last
+            let continues = ending.map { ",;:-–".contains($0) || $0.isLowercase && b.text.first?.isLowercase == true } ?? false
+            let headingAbove = a.rect.width < b.rect.width * 0.7 && !continues && !(ending.map { ".!?".contains($0) } ?? false)
+            return gap > -h * 0.5 && gap < h * 1.3 && leftAligned && sameSize && !headingAbove
         }
         var lo = pos, hi = pos
         while lo > 0, related(visual[lo - 1], visual[lo]), pos - lo < 4 { lo -= 1 }

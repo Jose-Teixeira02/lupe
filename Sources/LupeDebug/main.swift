@@ -17,7 +17,9 @@ Task {
     TextRecognizer.warmUp()
     let lines = (try? TextRecognizer.recognize(cg)) ?? []
     print("OCR \(lines.count) lines")
-    for l in lines { print("  | \(l.text)") }
+    for v in TextHitFinder.visualLines(lines, aspect: frame.width / frame.height) {
+        print(String(format: "  | h=%.4f y=%.3f  ", v.rect.height, v.rect.minY) + v.text)
+    }
     for w in words {
         guard let line = lines.first(where: { $0.words.contains { $0.text == w } }),
               let ow = line.words.first(where: { $0.text == w }) else { print("✗ \(w): not found by OCR"); continue }
