@@ -18,6 +18,19 @@ if let i = CommandLine.arguments.firstIndex(of: "--icon"), i + 1 < CommandLine.a
     exit(0)
 }
 
+// One Lupe at a time: two copies would fight over the shortcuts and overwrite each other's deck.
+// A second launch (another copy of the app, or opening it twice) hands over to the running one and quits.
+if let id = Bundle.main.bundleIdentifier,
+   let running = NSRunningApplication.runningApplications(withBundleIdentifier: id)
+       .first(where: { $0.processIdentifier != ProcessInfo.processInfo.processIdentifier }) {
+    if let url = running.bundleURL {
+        // Opening the running copy's bundle sends it a "reopen", which shows its main window.
+        NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
+        RunLoop.main.run(until: Date().addingTimeInterval(0.5))
+    }
+    exit(0)
+}
+
 let app = NSApplication.shared
 let delegate = MainActor.assumeIsolated { AppDelegate() }
 app.delegate = delegate

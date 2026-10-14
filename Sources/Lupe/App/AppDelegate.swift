@@ -17,9 +17,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var services: ServiceProvider!
     private var badgeTimer: Timer?
     private var subs: Set<AnyCancellable> = []
+    private var termSignal: DispatchSourceSignal?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
+        // `kill`/`pkill` (the install script, logout) quits like ⌘Q, so the deck is saved first.
+        signal(SIGTERM, SIG_IGN)
+        termSignal = DispatchSource.makeSignalSource(signal: SIGTERM, queue: .main)
+        termSignal?.setEventHandler { NSApp.terminate(nil) }
+        termSignal?.resume()
         model = AppModel(settings: LupeSettings())
 
         hover = HoverController(model: model)

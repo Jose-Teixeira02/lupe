@@ -159,6 +159,7 @@ any pair macOS supports, Norwegian Bokmål included.
 scripts/check.sh            # self-check suite (lexicon, FSRS, journey, lookup, sprinkles, OCR)
 scripts/check.sh --live     # also exercises on-device Translation and Apple Intelligence
 scripts/build-app.sh        # build ./build/Lupe.app (add --debug for a faster debug build)
+scripts/build-app.sh --install   # move it to ~/Applications and relaunch (only one Lupe runs at a time)
 .build/out/Products/Debug/Lupe --snapshot /tmp/lupe-shots   # render every screen to PNGs
 ```
 

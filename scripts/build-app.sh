@@ -1,7 +1,7 @@
 #!/bin/zsh
 # Builds Lupe.app into ./build (release by default).
 #   scripts/build-app.sh            build ./build/Lupe.app
-#   scripts/build-app.sh --install  also copy it to ~/Applications and open it
+#   scripts/build-app.sh --install  move it to ~/Applications (the only copy) and open it
 #   scripts/build-app.sh --debug    debug build (faster to compile)
 #
 # Signing: uses a "Lupe Dev" code-signing certificate from your keychain if you created one
@@ -98,9 +98,12 @@ echo "✓ Built $APP"
 
 if [[ $INSTALL == 1 ]]; then
   mkdir -p ~/Applications
+  # Quit the running Lupe (it saves your deck on the way out) and wait, so the new one doesn't hand over to it.
   pkill -x Lupe 2>/dev/null || true
+  for _ in {1..50}; do pgrep -x Lupe >/dev/null || break; sleep 0.1; done
   rm -rf ~/Applications/Lupe.app
-  cp -R "$APP" ~/Applications/Lupe.app
+  # Move rather than copy: a second Lupe.app left in build/ shows up in Spotlight and Launchpad.
+  mv "$APP" ~/Applications/Lupe.app
   /System/Library/CoreServices/pbs -update 2>/dev/null || true
   open ~/Applications/Lupe.app
   echo "✓ Installed to ~/Applications/Lupe.app and launched (look for the magnifier in the menu bar)"
