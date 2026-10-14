@@ -191,8 +191,9 @@ public enum SprinkleSelector {
             if (perLine[lineKey] ?? 0) >= config.maxPerLine { continue }
             if picked.contains(where: { $0.wordRect.center.distance(to: c.wordRect.center) < config.minSpacing }) { continue }
             var accepted = c
-            if let verify {
-                if verifications >= maxVerifications { break }
+            if let verify, c.mode == .teach {
+                // Only teach candidates cost a translation; assist tags stay available after the cap.
+                if verifications >= maxVerifications { continue }
                 verifications += 1
                 guard let v = await verify(c) else { continue }
                 if usedEntries.contains(v.entry.id) { continue }

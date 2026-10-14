@@ -94,13 +94,6 @@ public enum TextTools {
         return tokenizer.tokens(for: text.startIndex..<text.endIndex)
     }
 
-    /// The word whose range contains `offset` (a character offset into `text`), if any.
-    public static func word(in text: String, atCharacterOffset offset: Int) -> Range<String.Index>? {
-        guard offset >= 0, offset <= text.count else { return nil }
-        let target = text.index(text.startIndex, offsetBy: min(offset, max(0, text.count - 1)))
-        return wordRanges(in: text).first { $0.contains(target) || $0.lowerBound == target }
-    }
-
     /// Strips leading/trailing punctuation and quotes.
     public static func clean(_ word: String) -> String {
         word.trimmingCharacters(in: CharacterSet.punctuationCharacters.union(.whitespacesAndNewlines).union(.symbols))

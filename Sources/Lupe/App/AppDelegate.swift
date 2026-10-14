@@ -62,9 +62,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         badgeTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.updateBadge() }
         }
-        model.bank.objectWillChange.sink { [weak self] _ in
-            DispatchQueue.main.async { self?.updateBadge() }
-        }.store(in: &subs)
+        // The model forwards changes from whichever bank is current (it's replaced on language switch).
+        model.objectWillChange
+            .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
+            .sink { [weak self] _ in self?.updateBadge() }
+            .store(in: &subs)
 
         warmUp()
         if !model.settings.hasOnboarded {

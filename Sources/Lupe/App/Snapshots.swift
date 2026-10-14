@@ -115,8 +115,8 @@ enum Snapshots {
     static func wait<T>(_ work: @escaping @MainActor () async -> T) -> T {
         var result: T?
         Task { @MainActor in result = await work() }
-        let deadline = Date().addingTimeInterval(60)
-        while result == nil && Date() < deadline {
+        // No deadline: Vision/Translation warm-up can take minutes on a cold Mac.
+        while result == nil {
             RunLoop.main.run(until: Date().addingTimeInterval(0.02))
         }
         return result!

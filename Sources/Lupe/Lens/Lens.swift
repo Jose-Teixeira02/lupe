@@ -170,7 +170,8 @@ final class LensController {
         self.model = model
     }
 
-    var isVisible: Bool { window?.isVisible ?? false }
+    /// Open (or still reading the screen before the window appears).
+    var isVisible: Bool { (window?.isVisible ?? false) || task != nil }
 
     func toggle() {
         isVisible ? close() : open()
@@ -186,7 +187,10 @@ final class LensController {
         let mouse = NSEvent.mouseLocation
         state = LensState()
         task = Task {
-            guard let shot = try? await ScreenCapturer.shared.captureScreen(screen) else { return }
+            guard let shot = try? await ScreenCapturer.shared.captureScreen(screen), !Task.isCancelled else {
+                task = nil
+                return
+            }
             showWindow(on: screen)
             let image = shot.image
             let lines: [RecognizedLine] = await Task.detached(priority: .userInitiated) {

@@ -255,8 +255,12 @@ final class SprinkleController {
     /// The sprinkle under a point (word or its tag), used by the hover lens.
     func hit(at point: CGPoint) -> SprinkleCandidate? {
         current.first { c in
-            let tag = CGRect(x: c.wordRect.midX - 60, y: c.wordRect.maxY, width: 120, height: 18)
-            return c.wordRect.insetBy(dx: -2, dy: -2).contains(point) || tag.contains(point)
+            if c.wordRect.insetBy(dx: -2, dy: -2).contains(point) { return true }
+            switch SprinkleLabel.placement(style: model.settings.sprinkleStyle, spaceAbove: c.spaceAbove, spaceBelow: c.spaceBelow) {
+            case .above: return CGRect(x: c.wordRect.midX - 60, y: c.wordRect.maxY, width: 120, height: 18).contains(point)
+            case .below: return CGRect(x: c.wordRect.midX - 60, y: c.wordRect.minY - 18, width: 120, height: 18).contains(point)
+            case .cover: return false
+            }
         }
     }
 

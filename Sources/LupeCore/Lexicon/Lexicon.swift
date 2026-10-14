@@ -242,17 +242,14 @@ public final class Lexicon: @unchecked Sendable {
         for start in 3...(chars.count - 3) {
             let suffix = String(chars[start...])
             var head = (forward[suffix] ?? []).map { entries[$0] }.first { $0.pos == .noun }
-            var isPluralForm = false
             if head == nil {
                 head = (byForm[suffix] ?? []).map { entries[$0] }.first { $0.pos == .noun }
-                isPluralForm = head != nil
             }
             guard let head else { continue }
             let prefixRaw = String(chars[..<start])
             let prefix = prefixRaw.prefix(1).uppercased() + prefixRaw.dropFirst()
             let lemma = prefix + head.lemma.lowercased()
             let plural = head.forms.isEmpty ? "" : prefix + head.forms.lowercased()
-            _ = isPluralForm
             let entry = LexEntry(rank: head.rank + 20_000, lemma: lemma, pos: .noun, gender: head.gender,
                                  forms: plural, glosses: [:], cefr: head.cefr, id: "\(lemma)#n")
             return (entry, head, prefix)

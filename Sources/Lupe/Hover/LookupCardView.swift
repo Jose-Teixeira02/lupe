@@ -101,7 +101,7 @@ struct LookupCardView: View {
         VStack(alignment: .leading, spacing: 10) {
             // Headword
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                GenderedWord(display: r.direction == .toTarget ? r.headword : r.headword, gender: entry?.gender, pos: entry?.pos, size: 24)
+                GenderedWord(display: r.headword, gender: entry?.gender, pos: entry?.pos, size: 24)
                 Spacer(minLength: 4)
                 Button { actions.speak(entry?.lemma ?? r.term) } label: {
                     Image(systemName: "speaker.wave.2.fill").font(.system(size: 13))

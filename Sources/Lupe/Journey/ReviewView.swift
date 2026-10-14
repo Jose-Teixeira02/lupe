@@ -204,7 +204,7 @@ struct ReviewView: View {
                     }
                     if c.kind == .word, let ts = encounter?.targetSentence(target: model.target), let form = encounter?.targetForm,
                        ts.contains(form), !session.revealed {
-                        Text(ts.replacingOccurrences(of: form, with: "＿＿＿"))
+                        Text(Self.cloze(ts, hiding: form))
                             .font(.system(size: 15)).foregroundStyle(.secondary).multilineTextAlignment(.center)
                     }
                     if c.kind == .word, let g = c.gender, !session.revealed {
@@ -263,6 +263,15 @@ struct ReviewView: View {
             Rectangle().fill(color).frame(height: 4).clipShape(Capsule()).padding(.horizontal, 60)
         }
         .animation(.easeOut(duration: 0.18), value: session.revealed)
+    }
+
+    /// Blanks whole-word occurrences of `form` only ("Buch" but not "Buchhandlung").
+    static func cloze(_ sentence: String, hiding form: String) -> String {
+        var out = sentence
+        for r in TextTools.wordRanges(in: sentence).reversed() where sentence[r].caseInsensitiveCompare(form) == .orderedSame {
+            out.replaceSubrange(r, with: "＿＿＿")
+        }
+        return out
     }
 
     private func genderHint(_ g: Gender) -> String {

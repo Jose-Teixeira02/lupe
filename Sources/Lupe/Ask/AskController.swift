@@ -78,7 +78,6 @@ final class AskController {
     }
 
     private func relayout() {
-        guard panel.isVisible || true else { return }
         let size = panel.fittingSize
         panel.panel.setFrame(CGRect(x: topLeft.x, y: topLeft.y - size.height, width: size.width, height: size.height), display: true)
     }

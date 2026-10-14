@@ -103,7 +103,8 @@ final class HoverController {
         guard still, intent else { return }
         if let r = hitRect, r.insetBy(dx: -3, dy: -3).contains(mouse) { return }
         if panel.isVisible && panel.panel.frame.contains(mouse) { return }
-        if let p = lookupPoint, lookupTask != nil, hypot(p.x - mouse.x, p.y - mouse.y) < 4 { return }
+        // Already looked here (successfully or not): wait until the mouse moves.
+        if let p = lookupPoint, hypot(p.x - mouse.x, p.y - mouse.y) < 4 { return }
         trigger(at: mouse)
     }
 
