@@ -12,7 +12,14 @@ public struct TextBlock: Sendable, Hashable, Identifiable {
 
 public enum TextBlocks {
     /// Groups lines into blocks by vertical proximity, alignment and similar text height.
-    public static func group(_ lines: [RecognizedLine]) -> [TextBlock] {
+    /// - Parameter aspect: width / height of the capture, used to re-join lines OCR returned in pieces.
+    public static func group(_ rawLines: [RecognizedLine], aspect: CGFloat = 1.6) -> [TextBlock] {
+        // Same-line pieces become one line first, so a block reads in order.
+        let lines = TextHitFinder.visualLines(rawLines, aspect: aspect).map { v -> RecognizedLine in
+            let members = v.parts.map { rawLines[$0.index] }
+            let confidence = members.map(\.confidence).min() ?? 1
+            return RecognizedLine(text: v.text, rect: v.rect, confidence: confidence, words: [])
+        }
         let sorted = lines.sorted { $0.rect.maxY > $1.rect.maxY } // top to bottom
         var blocks: [[RecognizedLine]] = []
         for line in sorted {

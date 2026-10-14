@@ -308,6 +308,32 @@ func run() async {
         check(false, "OCR found the paragraph")
     }
 
+    section("OCR pieces on one line")
+    func piece(_ text: String, x: CGFloat, y: CGFloat, w: CGFloat) -> RecognizedLine {
+        var words: [RecognizedWord] = []
+        var cx = x
+        for r in TextTools.wordRanges(in: text) {
+            let ww = CGFloat(text[r].count) * (w / CGFloat(max(text.count, 1)))
+            words.append(RecognizedWord(text: String(text[r]), rect: CGRect(x: cx, y: y, width: ww, height: 0.03), range: r))
+            cx += ww + 0.004
+        }
+        return RecognizedLine(text: text, rect: CGRect(x: x, y: y, width: w, height: 0.03), confidence: 1, words: words)
+    }
+    // "Sorry, I'm running late." and "Can you look after my cat? She gave up" share a line; the sentence continues below.
+    let pieces = [
+        piece("Can you look after my cat? She gave up", x: 0.42, y: 0.80, w: 0.5),
+        piece("smoking last year and turned down the offer.", x: 0.02, y: 0.76, w: 0.6),
+        piece("Sorry, I'm running late.", x: 0.02, y: 0.80, w: 0.38),
+    ]
+    let f = CGRect(x: 0, y: 0, width: 1000, height: 600)
+    let gave = pieces[0].words.first { $0.text == "gave" }!.rect.denormalized(in: f).center
+    let gaveHit = TextHitFinder.hit(in: pieces, frame: f, at: gave)
+    check(gaveHit?.context == "She gave up smoking last year and turned down the offer.", "sentence continues across pieces and lines (got \(gaveHit?.context ?? "nil"))")
+    let run = pieces[2].words.first { $0.text == "running" }!.rect.denormalized(in: f).center
+    check(TextHitFinder.hit(in: pieces, frame: f, at: run)?.context == "Sorry, I'm running late.", "first piece keeps its own sentence")
+    let columns = [piece("Left column text here", x: 0.02, y: 0.5, w: 0.3), piece("Right column far away", x: 0.7, y: 0.5, w: 0.28)]
+    check(TextHitFinder.visualLines(columns, aspect: 1000.0 / 600).count == 2, "distant columns are not merged")
+
     // MARK: Live (on-device Translation)
     if live {
         section("Live: Apple Translation")

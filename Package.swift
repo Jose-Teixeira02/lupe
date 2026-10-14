@@ -17,6 +17,7 @@ let package = Package(
             linkerSettings: [.linkedFramework("Carbon")]
         ),
         .executableTarget(name: "LupeChecks", dependencies: ["LupeCore"], path: "Sources/LupeChecks"),
+        .executableTarget(name: "LupeDebug", dependencies: ["LupeCore"], path: "Sources/LupeDebug"),
     ],
     swiftLanguageModes: [.v5]
 )

@@ -206,14 +206,19 @@ extension LookupEngine {
             let isNoun = phraseTokens.first.map { $0.isCapitalized && lexicon.bestEntry(forGerman: $0.text, capitalized: true)?.pos == .noun } ?? false
             if !isNoun { german = german.prefix(1).lowercased() + german.dropFirst() }
             if token.wordClass == .verb {
-                let verbs = germanTokens.enumerated().compactMap { i, t -> LexEntry? in
+                // The verb of the same translated sentence, nearest to the phrase ("ich komme … zu spät" → kommen).
+                let sentence = TextTools.sentence(in: at.text, containing: first.range)
+                let sentenceRange = at.text.range(of: sentence) ?? at.text.startIndex..<at.text.endIndex
+                let anchor = germanTokens.firstIndex(of: first) ?? 0
+                let verbs = germanTokens.enumerated().compactMap { i, t -> (entry: LexEntry, distance: Int)? in
                     // Capitalised words mid-sentence are nouns ("zum Treffen"), never the verb we want.
-                    guard !phraseTokens.contains(t), t.wordClass == .verb, !t.isCapitalized || i == 0,
+                    guard sentenceRange.contains(t.range.lowerBound), !phraseTokens.contains(t), t.wordClass == .verb,
+                          !t.isCapitalized || t.range.lowerBound == sentenceRange.lowerBound,
                           let e = lexicon.bestEntry(forGerman: t.text, lemma: t.lemma), e.pos == .verb else { return nil }
-                    return e
-                }
-                if let main = verbs.first(where: { !Self.auxiliaries.contains(Lexicon.fold($0.lemma)) }) ?? verbs.first {
-                    german += " \(main.lemma)"
+                    return (e, abs(i - anchor))
+                }.sorted { $0.distance < $1.distance }
+                if let main = verbs.first(where: { !Self.auxiliaries.contains(Lexicon.fold($0.entry.lemma)) }) ?? verbs.first {
+                    german += " \(main.entry.lemma)"
                 }
             }
             guard !german.trimmingCharacters(in: .whitespaces).isEmpty else { continue }

@@ -197,7 +197,8 @@ final class LensController {
                 (try? TextRecognizer.recognize(image, options: RecognitionOptions(accurate: true))) ?? []
             }.value
             guard !Task.isCancelled else { return }
-            let blocks = TextBlocks.group(lines).filter { $0.text.count >= 2 && TextTools.isMostlyLetters($0.text) }
+            let aspect = shot.frame.width / max(shot.frame.height, 1)
+            let blocks = TextBlocks.group(lines, aspect: aspect).filter { $0.text.count >= 2 && TextTools.isMostlyLetters($0.text) }
             let frame = shot.frame
             var items: [LensState.Block] = []
             for b in blocks {
