@@ -183,6 +183,7 @@ func run() async {
         check(rebuilt == doc.map(\.text), "tokens + trailing text rebuild each paragraph exactly")
         let tagged = tokens.filter { $0.entry != nil }.count
         check(Double(tagged) / Double(max(tokens.count, 1)) > 0.6, "most words of an A1 story are in the pack (\(tagged)/\(tokens.count))")
+        check(tokens.first { $0.text == "Morgen" }?.entry?.pos == .noun, "'jeden Morgen' is the noun, not the adverb")
         if let t = tokens.first(where: { $0.text == "Straßenbahn" }), let p = doc.first(where: { $0.id == t.paragraph }),
            let (sentence, r) = ReadingDocument.sentence(around: t.range, in: p.text) {
             check(String(sentence[r]) == "Straßenbahn" && sentence.hasPrefix("Die Straßenbahn"), "word → its sentence and range")

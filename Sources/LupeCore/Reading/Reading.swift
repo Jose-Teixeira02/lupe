@@ -87,7 +87,7 @@ public enum ReadingDocument {
                     while cursor < analyzed.count, analyzed[cursor].range.upperBound <= r.lowerBound { cursor += 1 }
                     let token = cursor < analyzed.count && analyzed[cursor].range.overlaps(r) ? analyzed[cursor] : nil
                     // Capitalised mid-sentence means a noun; after ". " or a quote it's just the sentence start.
-                    let sentenceStart = previousGap.trimmingCharacters(in: .whitespaces).last.map { ".!?:„\"".contains($0) } ?? true
+                    let sentenceStart = previousGap.trimmingCharacters(in: .whitespaces).last.map { ".!?:„\"".contains($0) } ?? false
                     let capitalized = word.first?.isUppercase == true && i > 0 && !sentenceStart
                     entry = engine.lexicon.bestEntry(forGerman: word, lemma: token?.lemma, capitalized: capitalized)
                 }
