@@ -21,12 +21,22 @@ public struct ConfusableGroup: Sendable {
                 for segment in col.components(separatedBy: " ; ") {
                     guard let colon = segment.range(of: ": ") else { continue }
                     let key = segment[..<colon.lowerBound].trimmingCharacters(in: .whitespaces)
-                    map[key] = segment[colon.upperBound...].trimmingCharacters(in: .whitespaces)
+                    map[key] = curlyQuotes(segment[colon.upperBound...].trimmingCharacters(in: .whitespaces))
                 }
                 notes[lang] = map
             }
             return items.count >= 2 ? ConfusableGroup(items: items, notes: notes) : nil
         }
+    }
+
+    /// The file uses plain "…" for easy editing; cards show “…”.
+    public static func curlyQuotes(_ s: String) -> String {
+        var open = true
+        return String(s.map { c -> Character in
+            guard c == "\"" else { return c }
+            defer { open.toggle() }
+            return open ? "\u{201C}" : "\u{201D}"
+        })
     }
 }
 
@@ -54,6 +64,11 @@ extension Lexicon {
         return bestEntry(forGerman: item, capitalized: item.first?.isUppercase == true)
     }
 
+    /// A German word written like a word of another language: "das Kind" and "kind", "Gift" and "gift".
+    public static func spelledLike(_ german: String, _ word: String) -> Bool {
+        fold(german.split(separator: " ").last.map(String.init) ?? german) == fold(word)
+    }
+
     /// Same word for the purposes of a group: lemma, part of speech and (for nouns) gender.
     static func sameWord(_ a: LexEntry, _ b: LexEntry) -> Bool {
         fold(a.lemma) == fold(b.lemma) && a.pos == b.pos && a.gender == b.gender
@@ -62,14 +77,20 @@ extension Lexicon {
 
 extension LookupEngine {
     /// "Don't mix up" for an entry: hand-written groups first; otherwise other words that share a meaning.
-    public func confusables(for entry: LexEntry, limit: Int = 4) -> [Confusable] {
+    /// `sourceWord` is the English/Portuguese word that led here: a German look-alike of it ("kind" → das Kind) comes first.
+    public func confusables(for entry: LexEntry, sourceWord: String? = nil, limit: Int = 4) -> [Confusable] {
         // Synthesized entries (compounds, translator words) have no reliable neighbours.
         guard entry.rank < 20_000, entry.pos.isContentWord || entry.pos == .conjunction || entry.pos == .preposition
                 || entry.pos == .adverb || entry.pos == .pronoun, entry.pos != .phrase else { return [] }
         let language = primaryHelper
         var out: [Confusable] = []
         var seen = Set<String>()
-        for group in lexicon.confusableGroups {
+        var groups = lexicon.confusableGroups
+        if let source = sourceWord.map(Lexicon.fold) {
+            let looksAlike = { (g: ConfusableGroup) in g.items.contains { Lexicon.spelledLike($0, source) } }
+            groups = groups.filter(looksAlike) + groups.filter { !looksAlike($0) }
+        }
+        for group in groups {
             let resolved = group.items.map { ($0, lexicon.entry(forConfusable: $0)) }
             guard let mine = resolved.first(where: { $0.1.map { Lexicon.sameWord($0, entry) } ?? false }) else { continue }
             let notes = group.notes[language] ?? group.notes["en"] ?? [:]

@@ -13,7 +13,6 @@ liegen, stehen, sitzen | liegen: to be lying (flat) somewhere — also "to be lo
 bekommen, werden | bekommen: to get, to receive — NOT "to become" ("Ich bekomme ein Geschenk") ; werden: to become ("Ich werde Arzt") | bekommen: receber, obter — NÃO é "tornar-se" ; werden: tornar-se ("Ich werde Arzt")
 wollen, werden | wollen: to want — "Ich will" means I want, NOT I will ; werden: will (future), to become ("Ich werde kommen") | wollen: querer — "Ich will" = eu quero (não é futuro) ; werden: futuro, tornar-se ("Ich werde kommen")
 also, auch | also: so, therefore — NOT "also" ("Also gehen wir") ; auch: also, too ("Ich komme auch") | also: então, portanto — NÃO é "também" ; auch: também
-bald, schnell | bald: soon — NOT "bald" (hairless) ; schnell: fast, quickly | bald: em breve ; schnell: rápido, depressa
 fast, schnell | fast: almost — NOT "fast" ("fast fertig") ; schnell: fast, quick ("ein schnelles Auto") | fast: quase ("fast fertig") ; schnell: rápido
 still, noch | still: quiet, calm — NOT "still" (yet) ("Sei still!") ; noch: still, yet ("Ich warte noch") | still: calado, sossegado ; noch: ainda
 Gift, Geschenk | Gift: poison — NOT a gift! ; Geschenk: a present, a gift | Gift: veneno ; Geschenk: presente, prenda
@@ -44,3 +43,16 @@ spät, Verspätung | spät: late (time of day) ; Verspätung: a delay (trains, f
 wer, wo, wohin | wer: who — NOT "where" ; wo: where (location) ; wohin: where to (direction) | wer: quem ; wo: onde ; wohin: para onde
 ob, wenn, als | ob: whether, if (yes/no question) ; wenn: if, when, whenever ; als: when (one time in the past) | ob: se (pergunta sim/não) ; wenn: se, quando, sempre que ; als: quando (uma vez, no passado)
 seit, vor | seit: since, for (still going on: "seit drei Jahren") ; vor: ago ("vor drei Jahren") | seit: desde, há (ainda continua) ; vor: há (já passou: "vor drei Jahren")
+bald, kahl | bald: soon — NOT "bald" ("bis bald") ; kahl: bald (no hair), bare | bald: em breve ("bis bald") ; kahl: careca, despido
+Handy, praktisch | Handy: a mobile phone — NOT the adjective "handy" ; praktisch: handy, practical, useful | Handy: telemóvel ; praktisch: prático, útil
+wann, wenn, als | wann: when? — in questions ("Wann kommst du?") ; wenn: when(ever), if — present/future or repeated ; als: when — one moment in the past | wann: quando? — em perguntas ; wenn: quando, sempre que, se ; als: quando — uma vez no passado
+hell, die Hölle | hell: bright, light — NOT "hell" ("ein helles Zimmer") ; die Hölle: hell | hell: claro, luminoso ; die Hölle: o inferno
+der Rat, die Ratte | der Rat: advice, a council — NOT a rat ("Kannst du mir einen Rat geben?") ; die Ratte: a rat | der Rat: conselho ; die Ratte: ratazana
+der Mist, der Nebel | der Mist: rubbish, nonsense, "damn!" — NOT mist ("So ein Mist!") ; der Nebel: mist, fog | der Mist: porcaria, "bolas!" ; der Nebel: nevoeiro
+das Bad, schlecht | das Bad: a bathroom, a bath — NOT "bad" ; schlecht: bad | das Bad: casa de banho, banho ; schlecht: mau
+die Rente, die Miete | die Rente: a pension — NOT rent ("in Rente gehen" = to retire) ; die Miete: rent (what you pay for a flat) | die Rente: reforma, pensão ("in Rente gehen" = reformar-se) ; die Miete: renda
+die Note, die Notiz | die Note: a grade at school, a musical note ("eine gute Note") ; die Notiz: a written note ("sich Notizen machen") | die Note: nota (escola, música) ; die Notiz: apontamento, nota escrita
+die Wand, die Mauer | die Wand: a wall inside, of a room ("ein Bild an der Wand") ; die Mauer: a wall outside, of stone or brick ("die Berliner Mauer") | die Wand: parede ; die Mauer: muro ("die Berliner Mauer")
+die Milliarde, die Billion | die Milliarde: a billion (1,000,000,000) ; die Billion: a trillion (1,000,000,000,000) — NOT a billion | die Milliarde: mil milhões ; die Billion: bilião (10¹²)
+das Menü, die Speisekarte | das Menü: a set meal, or a menu on screen ; die Speisekarte: the menu at a restaurant ("Die Speisekarte, bitte!") | das Menü: menu (refeição fixa) ou do ecrã ; die Speisekarte: a ementa
+arm, der Arm | arm: poor ("arm und reich") ; der Arm: the arm (body) | arm: pobre ; der Arm: braço

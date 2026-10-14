@@ -4,7 +4,22 @@ import LupeCore
 
 // Dev tool: runs Lupe's hover pipeline (OCR → word under point → context lookup) on a screenshot.
 // Usage: LupeDebug <image> word1 word2 ...
+//        LupeDebug --ask "nice" "kind" ...   (the Ask bar's answer for each input)
 let args = CommandLine.arguments
+if args.count >= 3, args[1] == "--ask" {
+    let lex = try! LupePaths.loadLexicon("de")
+    let engine = LookupEngine(lexicon: lex, translator: AppleTranslator(), helpers: ["en", "pt"], primaryHelper: "en")
+    let done = DispatchSemaphore(value: 0)
+    Task {
+        for input in args.dropFirst(2) {
+            guard let r = try? await engine.translatePhrase(input) else { print("✗ \(input): failed"); continue }
+            print("• \(input) [\(r.inputLanguage)] → \(r.output)   senses: \(r.senses.map(\.surface).joined(separator: ", "))")
+        }
+        done.signal()
+    }
+    while done.wait(timeout: .now()) == .timedOut { RunLoop.main.run(until: Date().addingTimeInterval(0.02)) }
+    exit(0)
+}
 guard args.count >= 2, let ns = NSImage(contentsOfFile: args[1]), let cg = ns.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
     print("usage: LupeDebug <image> words…"); exit(1)
 }

@@ -81,7 +81,26 @@ The same word means different things in different sentences, so Lupe always look
 | *light* | This bag is very **light**. | **leicht** (but **das Licht** for a lamp) |
 
 When you type a single word in the Ask bar without a sentence, it lists the possible meanings instead
-of guessing: "bank" gives *die Bank* (money) and *das Ufer* (river).
+of guessing: "bank" gives *die Bank* (money) and *das Ufer* (river). A lone word gives the translator
+nothing to go on (it turns "nice" into *Netz*), so for single words the dictionary has the last say.
+
+## Don't mix up
+
+Some words are easy to confuse, so cards and the Ask bar put them side by side, each with a note on
+when to use it:
+
+| You look up | Lupe adds |
+|---|---|
+| *schön* | **schön**: beautiful, nice to look at or to experience · **nett**: nice as in kind, friendly · **hübsch**: pretty |
+| *gift* | **das Geschenk**: a present · **das Gift**: poison, NOT a gift! |
+| *kind* | **nett**: nice, kind · **das Kind**: a child |
+| *bekommen* | **bekommen**: to get, NOT to become · **werden**: to become |
+| *der See* | **der See**: a lake · **die See**: the sea (formal) · **das Meer**: the sea |
+
+The notes are in `packs/de/confusables.txt`, one group per line, in English and Portuguese. About
+55 groups so far: classic pairs (kennen/wissen, legen/stellen, wann/wenn/als) and false friends
+(also, bald, Chef, eventuell, Handy, Rente). Words that aren't in a group get a "Similar meaning" box
+instead, with other words that share a meaning.
 
 ## How it decides what to show
 
@@ -121,6 +140,13 @@ word per line:
 lemma|pos|gender|forms|english glosses|portuguese glosses|CEFR
 Tisch|n|m|Tische|table|mesa|A1
 fahren|v|-|fährt · fuhr · ist gefahren|to drive; to go (by vehicle)|conduzir; ir (de transporte)|A1
+```
+
+An optional `confusables.txt` adds "Don't mix up" notes:
+
+```
+words | English notes | Portuguese notes
+lernen, studieren | lernen: to learn, to study (any level) ; studieren: to study at university | lernen: aprender ; studieren: estudar na universidade
 ```
 
 Put the folder in `packs/<code>/`, or in `~/Library/Application Support/Lupe/packs/<code>/` for a

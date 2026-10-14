@@ -238,6 +238,25 @@ func run() async {
     check(tischMix.isEmpty, "nothing to mix up for Tisch")
     let niceSenses = mixEngine.senses(ofHelper: "nice", language: "en", translation: "schön")
     check(niceSenses.contains { $0.surface == "nett" && ($0.meaning ?? "").contains("kind") }, "Ask 'nice' explains schön vs nett")
+    check(ConfusableGroup.curlyQuotes("as in \"ein netter Kollege\" or \"lieb\"") == "as in \u{201C}ein netter Kollege\u{201D} or \u{201C}lieb\u{201D}",
+          "notes get typographic quotes")
+    // A lone word gives the translator no context: the dictionary decides.
+    let askEngine = LookupEngine(lexicon: lexicon, translator: FakeTranslator(table: [
+        "nice": "Netz", "kind": "Gütig", "late": "Spät", "gift": "Geschenk", "rent": "Miete",
+    ]))
+    let askNice = try? await askEngine.translatePhrase("nice")
+    check(askNice?.output == "schön", "Ask 'nice' → schön, not the translator's Netz (got \(askNice?.output ?? "-"))")
+    let askLate = try? await askEngine.translatePhrase("late")
+    check(askLate?.output == "spät", "Ask 'late' → spät in lowercase (got \(askLate?.output ?? "-"))")
+    let askKind = try? await askEngine.translatePhrase("kind")
+    check(askKind?.output == "nett" && askKind?.confusables.contains { $0.display == "das Kind" && $0.note.contains("child") } == true,
+          "Ask 'kind' → nett, and das Kind is a child (got \(askKind?.output ?? "-"), \(askKind?.confusables.map(\.display) ?? []))")
+    let askGift = try? await askEngine.translatePhrase("gift")
+    check(askGift?.confusables.first?.display == "das Geschenk" && askGift?.confusables.contains { $0.display == "das Gift" } == true,
+          "Ask 'gift' → das Geschenk, warns about das Gift (got \(askGift?.confusables.map(\.display) ?? []))")
+    check(askEngine.language(of: "rent", word: "rent") == "en", "a lone word's language comes from the dictionary (rent is English)")
+    let kindHover = askEngine.confusables(for: lexicon.entries(forGerman: "nett").first!, sourceWord: "kind")
+    check(kindHover.dropFirst().first?.display == "das Kind", "hovering English 'kind': the look-alike das Kind comes first (got \(kindHover.map(\.display)))")
 
     // MARK: Lookup engine (fake translator)
     section("Lookup engine")

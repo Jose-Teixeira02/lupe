@@ -28,11 +28,15 @@ enum Snapshots {
         let thumbsCard = wait { await model.engine.lookup(word: "Daumen", context: "Ich drücke dir morgen die Daumen!") }
         let lockCard = wait { await model.engine.lookup(word: "Schloss", context: "Das Schloss an der Tür ist kaputt.") }
         let gaveCard = wait { await model.engine.lookup(word: "gave", context: "She gave up smoking last year.") }
+        let schoenCard = wait { await model.engine.lookup(word: "schön", context: "Das Wetter ist schön, die Sonne scheint.") }
+        let niceCard = wait { await model.engine.lookup(word: "nice", context: "Your brother is really nice to everyone.") }
+        let giftCard = wait { await model.engine.lookup(word: "gift", context: "Thank you for the lovely gift!") }
         for (name, r, saved) in [("card-en-books", englishCard, true), ("card-en-light", lightCard, false),
                                  ("card-de-anrufen", germanCard, true), ("card-en-riverbank", riverCard, false),
                                  ("card-de-compound", compound, true), ("card-en-runninglate", lateCard, true),
                                  ("card-de-daumen", thumbsCard, true), ("card-de-schloss", lockCard, true),
-                                 ("card-en-gaveup", gaveCard, true)] {
+                                 ("card-en-gaveup", gaveCard, true), ("card-de-schoen", schoenCard, true),
+                                 ("card-en-nice", niceCard, true), ("card-en-gift", giftCard, true)] {
             let s = LookupCardState()
             s.reset(.ready(r))
             if saved { s.saved = .saved(UUID(), created: true) }
@@ -48,6 +52,12 @@ enum Snapshots {
         ask.input = "I'm running late, sorry!"
         ask.result = wait { try? await model.engine.translatePhrase("I'm running late, sorry!") }
         save(AskView(state: ask, model: model, actions: .init()), dir, "ask-en")
+        for word in ["nice", "kind", "gift"] {
+            let single = AskState()
+            single.input = word
+            single.result = wait { try? await model.engine.translatePhrase(word) }
+            save(AskView(state: single, model: model, actions: .init()), dir, "ask-en-\(word)")
+        }
         let check = AskState()
         check.input = "Ich habe gestern nach Berlin gefahren."
         check.result = wait { try? await model.engine.translatePhrase(check.input) }

@@ -64,6 +64,8 @@ public struct PhraseResult: Sendable {
     public var secondaryLanguage: String?
     /// For a single word typed without context: the other meanings it can have ("bank" → die Bank, das Ufer).
     public var senses: [WordGloss] = []
+    /// For a single word: words learners confuse it with ("Geschenk" vs "Gift").
+    public var confusables: [Confusable] = []
 }
 
 /// Turns "the word under the mouse" into a learnable result: the sentence is translated with word
@@ -90,17 +92,24 @@ public final class LookupEngine: @unchecked Sendable {
     /// Detects the language of a line, using the lexicon to settle short or ambiguous strings.
     public func language(of text: String, word: String? = nil) -> String {
         let candidates = languages
+        // A lone word is too little for the recognizer ("rent" looks German to it): the dictionary decides first.
+        let alone = text.split(separator: " ").count == 1
+        if alone, let word, let lang = dictionaryLanguage(of: word) { return lang }
         if let (lang, confidence) = TextTools.detectLanguageWithConfidence(text, candidates: candidates),
            confidence > 0.55 || text.split(separator: " ").count >= 4 {
             return lang
         }
-        if let word {
-            let inTarget = !lexicon.entries(forGerman: word).isEmpty
-            let inHelpers = helpers.filter { !lexicon.entries(forGloss: word, language: $0).isEmpty }
-            if inTarget && inHelpers.isEmpty { return target }
-            if !inTarget, let h = inHelpers.first { return h }
-        }
+        if !alone, let word, let lang = dictionaryLanguage(of: word) { return lang }
         return TextTools.detectLanguage(text, candidates: candidates) ?? primaryHelper
+    }
+
+    /// The language a word belongs to when the dictionary knows it on one side only.
+    private func dictionaryLanguage(of word: String) -> String? {
+        let inTarget = !lexicon.entries(forGerman: word).isEmpty
+        let inHelpers = helpers.filter { !lexicon.entries(forGloss: word, language: $0).isEmpty }
+        if inTarget && inHelpers.isEmpty { return target }
+        if !inTarget, let h = inHelpers.first { return h }
+        return nil
     }
 
     // MARK: Word lookup
@@ -108,7 +117,9 @@ public final class LookupEngine: @unchecked Sendable {
     public func lookup(word rawWord: String, context: String, wordRange: Range<String.Index>? = nil,
                        languageHint: String? = nil) async -> LookupResult {
         var result = await lookupInContext(word: rawWord, context: context, wordRange: wordRange, languageHint: languageHint)
-        if let e = result.entry { result.confusables = confusables(for: e) }
+        if let e = result.entry {
+            result.confusables = confusables(for: e, sourceWord: result.direction == .toTarget ? TextTools.clean(rawWord) : nil)
+        }
         return result
     }
 
@@ -495,25 +506,64 @@ public final class LookupEngine: @unchecked Sendable {
                                       breakdown: breakdown(of: text), secondaryOutput: single ? secondary.map(Self.wordGloss) : secondary,
                                       secondaryLanguage: second)
             result.senses = senses(ofGerman: text)
+            if single, let e = lexicon.bestEntry(forGerman: text, capitalized: text.first?.isUppercase == true) {
+                result.confusables = confusables(for: e)
+            }
             return result
         }
-        let out = try await translator.translate(text, from: lang, to: target)
+        var out = try await translator.translate(text, from: lang, to: target)
+        var outEntry: LexEntry?
+        if !text.contains(" ") { (out, outEntry) = dictionaryWord(out, for: text, language: lang) }
         var result = PhraseResult(input: text, inputLanguage: lang, output: out, outputLanguage: target,
                                   breakdown: breakdown(of: out), secondaryOutput: nil, secondaryLanguage: nil)
         result.senses = senses(ofHelper: text, language: lang, translation: out)
+        if let outEntry {
+            let all = confusables(for: outEntry, sourceWord: text)
+            if result.senses.isEmpty {
+                result.confusables = all // "gift" → das Geschenk, and das Gift is poison
+            } else {
+                // The senses already compare the German options; still flag a look-alike they don't list ("kind" ≠ das Kind).
+                let listed = Set(result.senses.compactMap { $0.entry.map { Lexicon.fold($0.lemma) } })
+                let alike = all.filter { !$0.isCurrent && Lexicon.spelledLike($0.display, text) && !listed.contains(Lexicon.fold($0.entry?.lemma ?? $0.display)) }
+                if !alike.isEmpty { result.confusables = all.filter(\.isCurrent) + alike }
+            }
+        }
         return result
+    }
+
+    /// A lone word gives the translator no context ("nice" → "Netz", "late" → "Spät"), so the dictionary decides:
+    /// keep the translator's word if it's one of the German entries for `word`, else take the likeliest one.
+    func dictionaryWord(_ translated: String, for word: String, language: String) -> (String, LexEntry?) {
+        let candidates = helperWordEntries(word, language: language)
+        let folded = Lexicon.fold(translated)
+        let translatedEntries = lexicon.entries(forGerman: translated)
+        if let match = candidates.first(where: { Lexicon.fold($0.lemma) == folded })
+            ?? candidates.first(where: { c in translatedEntries.contains { $0.id == c.id } }) {
+            return (match.lemma, match)
+        }
+        if let best = candidates.first { return (best.lemma, best) }
+        // Unknown to the dictionary: keep the translation, with the dictionary's spelling if it knows the German word.
+        if let e = translatedEntries.first, Lexicon.fold(e.lemma) == folded { return (e.lemma, e) }
+        return (translated, nil)
+    }
+
+    /// German entries for a lone English/Portuguese word, likeliest first.
+    func helperWordEntries(_ text: String, language: String) -> [LexEntry] {
+        helperWord(text, language: language)?.entries ?? []
+    }
+
+    private func helperWord(_ text: String, language: String) -> (token: AnalyzedToken, entries: [LexEntry])? {
+        let tokens = TextTools.analyze(text, language: language)
+        guard let token = tokens.first(where: { !Stopwords.set(for: language).contains($0.text.lowercased()) }) ?? tokens.first else { return nil }
+        var entries = candidateEntries(word: token.text, token: token, tokens: tokens, language: language).filter { $0.pos.isContentWord }
+        entries += lexicon.entries(forGloss: text.lowercased(), language: language)
+        var seen = Set<String>()
+        return (token, entries.filter { seen.insert(Lexicon.fold($0.lemma)).inserted })
     }
 
     /// A lone English/Portuguese word or short gloss can mean several German words; list them when they differ.
     public func senses(ofHelper text: String, language: String, translation: String) -> [WordGloss] {
-        guard text.split(separator: " ").count <= 3 else { return [] }
-        let tokens = TextTools.analyze(text, language: language)
-        guard let token = tokens.first(where: { !Stopwords.set(for: language).contains($0.text.lowercased()) }) ?? tokens.first else { return [] }
-        var entries = candidateEntries(word: token.text, token: token, tokens: tokens, language: language).filter { $0.pos.isContentWord }
-        entries += lexicon.entries(forGloss: text.lowercased(), language: language)
-        var seen = Set<String>()
-        entries = entries.filter { seen.insert(Lexicon.fold($0.lemma)).inserted }
-        guard entries.count > 1 else { return [] }
+        guard text.split(separator: " ").count <= 3, let (token, entries) = helperWord(text, language: language), entries.count > 1 else { return [] }
         return entries.prefix(5).map { e in
             // What sets each one apart: the hand-written note, else the matching sense plus the others
             // ("bank (river)", "nice, beautiful, pretty") rather than the same word over and over.

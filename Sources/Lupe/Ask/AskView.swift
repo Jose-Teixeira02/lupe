@@ -106,8 +106,9 @@ struct AskView: View {
                     iconButton("plus.circle", help: "Save phrase (⌘S)") { actions.save() }
                         .keyboardShortcut("s", modifiers: .command)
                 }
-                if !(isSingleWord(r) && !r.senses.isEmpty) { breakdown(r.breakdown) }
+                if !explainsWord(r) { breakdown(r.breakdown) }
                 sensesRow(r)
+                confusables(r)
             } else {
                 // German → meaning (+ grammar check)
                 VStack(alignment: .leading, spacing: 4) {
@@ -129,7 +130,8 @@ struct AskView: View {
                 }
                 if !isSingleWord(r) { checkSection(r) }
                 sensesRow(r)
-                if !(isSingleWord(r) && !r.senses.isEmpty) { breakdown(r.breakdown) }
+                confusables(r)
+                if !explainsWord(r) { breakdown(r.breakdown) }
             }
             if let toast = state.toast {
                 Label(toast, systemImage: "checkmark.circle.fill").font(.system(size: 11, weight: .medium)).foregroundStyle(Theme.success)
@@ -183,6 +185,14 @@ struct AskView: View {
     }
 
     private func isSingleWord(_ r: PhraseResult) -> Bool { !r.input.contains(" ") }
+
+    /// A single word with its senses or look-alikes spelled out doesn't need the word-by-word chips too.
+    private func explainsWord(_ r: PhraseResult) -> Bool { isSingleWord(r) && !(r.senses.isEmpty && r.confusables.isEmpty) }
+
+    @ViewBuilder
+    private func confusables(_ r: PhraseResult) -> some View {
+        if !r.confusables.isEmpty { ConfusablesBox(items: r.confusables, speak: actions.speak, wordWidth: 90) }
+    }
 
     /// "Depending on context: die Bank (money) · das Ufer (river)".
     @ViewBuilder
