@@ -121,6 +121,38 @@ public enum TextTools {
         return text.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    /// Headlines and titles in capitals ("TJI REAGE AOS PRIMOS").
+    public static func isShouting(_ s: String) -> Bool {
+        let letters = s.filter(\.isLetter)
+        let upper = letters.filter(\.isUppercase).count
+        return letters.count >= 8 && Double(upper) / Double(letters.count) >= 0.8
+            && s.split(separator: " ").filter { $0.count >= 2 }.count >= 2
+    }
+
+    /// "TJI REAGE AOS PRIMOS \"FRANCISCO RUIVO\"" → "Tji reage aos primos \"Francisco Ruivo\"": capitals hide which
+    /// words are nouns or names, and translators handle them badly. Quoted words are usually names or titles, so
+    /// they keep a capital each. One Character per Character, so offsets still line up.
+    public static func sentenceCased(_ s: String) -> String {
+        func upper(_ c: Character) -> Character { c.uppercased().count == 1 ? Character(c.uppercased()) : c }
+        func lower(_ c: Character) -> Character { c.lowercased().count == 1 ? Character(c.lowercased()) : c }
+        var out = ""
+        var startOfSentence = true
+        var inQuotes = false
+        var previous: Character = " "
+        for c in s {
+            if c.isLetter {
+                out.append(startOfSentence || (inQuotes && !previous.isLetter) ? upper(c) : lower(c))
+                startOfSentence = false
+            } else {
+                out.append(c)
+                if ".!?:".contains(c) { startOfSentence = true }
+                if "\"“”„«»".contains(c) { inQuotes.toggle() }
+            }
+            previous = c
+        }
+        return out
+    }
+
     public static func isMostlyLetters(_ s: String) -> Bool {
         let letters = s.unicodeScalars.filter { CharacterSet.letters.contains($0) }.count
         return s.count > 0 && Double(letters) / Double(s.count) > 0.6

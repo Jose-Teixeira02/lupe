@@ -114,8 +114,9 @@ extension LookupEngine {
         for key in keys { candidates += lexicon.entries(forGloss: key, language: language) }
         var lemmas = Set([Lexicon.fold(entry.lemma)])
         candidates = candidates
-            .filter { $0.id != entry.id && $0.pos.isContentWord && $0.pos != .phrase && lemmas.insert(Lexicon.fold($0.lemma)).inserted }
-            .sorted { ($0.pos == entry.pos ? 0 : 1, $0.rank) < ($1.pos == entry.pos ? 0 : 1, $1.rank) }
+            // Same kind of word only: "gut" and "nun" share the gloss "well", but not a meaning.
+            .filter { $0.id != entry.id && $0.pos == entry.pos && $0.pos != .phrase && lemmas.insert(Lexicon.fold($0.lemma)).inserted }
+            .sorted { $0.rank < $1.rank }
         return candidates.prefix(2).map { e in
             Confusable(display: lexicon.display(e), entry: e, note: e.glossList(language, limit: 3), isCurrent: false, curated: false)
         }

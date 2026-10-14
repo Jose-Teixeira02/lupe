@@ -5,7 +5,23 @@ import LupeCore
 // Dev tool: runs Lupe's hover pipeline (OCR → word under point → context lookup) on a screenshot.
 // Usage: LupeDebug <image> word1 word2 ...
 //        LupeDebug --ask "nice" "kind" ...   (the Ask bar's answer for each input)
+//        LupeDebug --hover <word> <sentence>  (the hover card for a word in a sentence)
 let args = CommandLine.arguments
+if args.count == 4, args[1] == "--hover" {
+    let lex = try! LupePaths.loadLexicon("de")
+    let engine = LookupEngine(lexicon: lex, translator: AppleTranslator(), helpers: ["en", "pt"], primaryHelper: "en")
+    let done = DispatchSemaphore(value: 0)
+    Task {
+        let r = await engine.lookup(word: args[2], context: args[3])
+        print("[\(r.sourceLanguage) → \(r.direction)] \(r.headword)  entry: \(r.entry.map { "\($0.lemma) (\($0.pos))" } ?? "-")  here: \(r.senseHere ?? "-")")
+        print("  context → \(r.contextTranslation ?? "-")")
+        print("  aligned: \(r.aligned ?? "-")  confirmed: \(r.confirmedByContext)  meanings: \(r.meanings)")
+        print("  don't mix up: \(r.confusables.map(\.display))")
+        done.signal()
+    }
+    while done.wait(timeout: .now()) == .timedOut { RunLoop.main.run(until: Date().addingTimeInterval(0.02)) }
+    exit(0)
+}
 if args.count >= 3, args[1] == "--ask" {
     let lex = try! LupePaths.loadLexicon("de")
     let engine = LookupEngine(lexicon: lex, translator: AppleTranslator(), helpers: ["en", "pt"], primaryHelper: "en")

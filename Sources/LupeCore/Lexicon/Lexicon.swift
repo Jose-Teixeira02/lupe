@@ -229,13 +229,19 @@ public final class Lexicon: @unchecked Sendable {
     /// Best entry for a German token, preferring nouns when capitalised mid-sentence.
     public func bestEntry(forGerman word: String, lemma: String? = nil, capitalized: Bool = false) -> LexEntry? {
         var candidates = entries(forGerman: word)
+        let bySpelling = !candidates.isEmpty
         if candidates.isEmpty, let lemma { candidates = entries(forGerman: lemma) }
         // The system tagger sometimes spells umlauts out ("koennen" for "können").
         if candidates.isEmpty, let lemma, let restored = Self.restoringUmlauts(lemma) { candidates = entries(forGerman: restored) }
+        // Capitalised mid-sentence, it's a noun: a tagger lemma that isn't one is a different word
+        // ("Verwandten" are relatives, not a form of verwenden).
+        if info.capitalizeNouns, capitalized, !bySpelling, !candidates.isEmpty, !candidates.contains(where: { $0.pos == .noun }) {
+            return nil
+        }
         // Lowercase words are never nouns in German: "rufe" is a form of rufen, not der Ruf.
-        if info.capitalizeNouns, !capitalized, word.first?.isLowercase == true,
-           candidates.allSatisfy({ $0.pos == .noun }), let verb = guessVerb(word) {
-            return verb
+        if info.capitalizeNouns, !capitalized, word.first?.isLowercase == true, candidates.allSatisfy({ $0.pos == .noun }),
+           let verb = guessVerb(word) ?? lemma.flatMap({ l in entries(forGerman: l).first { $0.pos == .verb } }) {
+            return verb // "verwandte" (I used) is verwenden, not der Verwandte
         }
         if candidates.isEmpty { return nil }
         if info.capitalizeNouns {

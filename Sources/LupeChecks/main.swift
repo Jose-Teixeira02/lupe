@@ -255,6 +255,25 @@ func run() async {
     check(askGift?.confusables.first?.display == "das Geschenk" && askGift?.confusables.contains { $0.display == "das Gift" } == true,
           "Ask 'gift' → das Geschenk, warns about das Gift (got \(askGift?.confusables.map(\.display) ?? []))")
     check(askEngine.language(of: "rent", word: "rent") == "en", "a lone word's language comes from the dictionary (rent is English)")
+    // Capitals: a headline is translated in sentence case; a capitalised word is never matched to a verb lemma.
+    let caps0 = "TJI REAGE AOS PRIMOS \"FRANCISCO RUIVO\":"
+    check(TextTools.isShouting("TJI REAGE AOS PRIMOS \"FRANCISCO RUIVO\":") && !TextTools.isShouting("Tji reage aos primos"),
+          "headlines in capitals are recognised")
+    check(TextTools.sentenceCased("TJI REAGE AOS PRIMOS. OLÁ!") == "Tji reage aos primos. Olá!", "sentence case keeps one sentence start per sentence")
+    check(TextTools.sentenceCased(caps0) == "Tji reage aos primos \"Francisco Ruivo\":", "quoted names keep their capitals (got \(TextTools.sentenceCased(caps0)))")
+    check(lexicon.bestEntry(forGerman: "Verwandtschaftsgrade", lemma: "verwenden", capitalized: true) == nil,
+          "a capitalised word isn't a verb just because the tagger says so")
+    check(lexicon.bestEntry(forGerman: "VERWANDTEN", capitalized: true)?.lemma == "Verwandte", "VERWANDTEN → der Verwandte")
+    check(lexicon.bestEntry(forGerman: "verwandte", lemma: "verwenden")?.lemma == "verwenden", "lowercase verwandte (I used) → verwenden")
+    let capsEngine = LookupEngine(lexicon: lexicon, translator: FakeTranslator(table: [
+        "Tji reage aos primos \"Francisco Ruivo\":": "Tji reagiert auf die Cousins \"Francisco Ruivo\":",
+    ]))
+    let caps = "TJI REAGE AOS PRIMOS \"FRANCISCO RUIVO\":"
+    let capsCard = await capsEngine.lookup(word: "PRIMOS", context: caps, wordRange: caps.range(of: "PRIMOS"), languageHint: "pt")
+    check(capsCard.entry?.lemma == "Cousin" && capsCard.contextTranslation != nil,
+          "PRIMOS in a headline → der Cousin, not verwenden (got \(capsCard.entry?.lemma ?? "-"), \(capsCard.contextTranslation ?? "no translation"))")
+    let gutMix = mixEngine.confusables(for: lexicon.entries(forGerman: "gut").first { $0.pos == .adjective }!)
+    check(!gutMix.contains { $0.entry?.pos != .adjective }, "similar meaning keeps to the same kind of word (got \(gutMix.map(\.display)))")
     let kindHover = askEngine.confusables(for: lexicon.entries(forGerman: "nett").first!, sourceWord: "kind")
     check(kindHover.dropFirst().first?.display == "das Kind", "hovering English 'kind': the look-alike das Kind comes first (got \(kindHover.map(\.display)))")
 

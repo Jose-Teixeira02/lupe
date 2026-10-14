@@ -13,6 +13,7 @@ final class ReviewSession: ObservableObject {
     @Published private(set) var startedAt = Date()
     /// Cards in a short learning step that will come back later today (not shown again right away).
     @Published private(set) var comingBack = 0
+    @Published var confirmingRemove = false
 
     private let model: AppModel
 
@@ -73,6 +74,14 @@ final class ReviewSession: ObservableObject {
                 comingBack += 1
             }
         }
+        next()
+    }
+
+    /// A card that shouldn't be there (a wrong lookup, a word you don't want) leaves the deck from the review itself.
+    func removeCurrent() {
+        guard let c = current else { return }
+        model.bank.remove(c.id)
+        queue.removeAll { $0 == c.id }
         next()
     }
 
@@ -185,9 +194,17 @@ struct ReviewView: View {
             ProgressView(value: Double(session.reviewed), total: Double(max(total, 1)))
                 .tint(Theme.accent)
             Text("\(session.remaining) left").font(.system(size: 11, design: .rounded)).foregroundStyle(.secondary)
+            Button { session.confirmingRemove = true } label: { Image(systemName: "trash") }.buttonStyle(.borderless)
+                .help("Remove this card from your deck (a wrong translation, or a word you don't need)")
             Button { session.stop() } label: { Image(systemName: "xmark") }.buttonStyle(.borderless).help("End session")
         }
         .padding(.horizontal, 24).padding(.top, 16)
+        .confirmationDialog("Remove “\(session.current?.display ?? "")” from your deck?", isPresented: $session.confirmingRemove) {
+            Button("Remove card", role: .destructive) { session.removeCurrent() }
+            Button("Keep it", role: .cancel) {}
+        } message: {
+            Text("Its review history goes too. You can always look it up again.")
+        }
     }
 
     // MARK: Card

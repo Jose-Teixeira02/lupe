@@ -134,6 +134,20 @@ public final class LookupEngine: @unchecked Sendable {
         if lang == target {
             return await lookupTarget(word: word, context: context, wordRange: range)
         }
+        // An English/Portuguese headline in capitals: translate it in sentence case, so the German comes back with its
+        // nouns capitalised ("die Cousins", not "DIE VERWANDTEN" read as a form of verwenden).
+        if TextTools.isShouting(context) {
+            let calm = TextTools.sentenceCased(context)
+            let calmRange = range.flatMap { r -> Range<String.Index>? in
+                let lo = context.distance(from: context.startIndex, to: r.lowerBound)
+                let n = context.distance(from: r.lowerBound, to: r.upperBound)
+                guard calm.count == context.count else { return nil }
+                let start = calm.index(calm.startIndex, offsetBy: lo)
+                return start..<calm.index(start, offsetBy: n)
+            }
+            let calmWord = calmRange.map { String(calm[$0]) } ?? word.lowercased()
+            return await lookupHelper(word: calmWord, context: calm, wordRange: calmRange, language: lang)
+        }
         return await lookupHelper(word: word, context: context, wordRange: range, language: lang)
     }
 
@@ -263,9 +277,12 @@ public final class LookupEngine: @unchecked Sendable {
             }
             if chosen == nil, let t = content.first {
                 // Aligned to a word the pack doesn't know: learn the translator's word.
-                var e = LexEntry(rank: 50_000, lemma: t.lemma, pos: Self.pos(for: t.wordClass), gender: nil, forms: "",
-                                 glosses: [:], cefr: "B2", id: "\(t.lemma)#mt")
-                if e.pos == .noun { e.lemma = t.lemma.prefix(1).uppercased() + t.lemma.dropFirst() }
+                // Capitalised mid-sentence it's a noun, whatever the tagger thinks its lemma is.
+                let noun = t.isCapitalized && t.range.lowerBound != germanTokens.first?.range.lowerBound
+                let lemma = noun && t.wordClass != .noun ? t.text : t.lemma
+                var e = LexEntry(rank: 50_000, lemma: lemma, pos: noun ? .noun : Self.pos(for: t.wordClass), gender: nil, forms: "",
+                                 glosses: [:], cefr: "B2", id: "\(lemma)#mt")
+                if e.pos == .noun { e.lemma = lemma.prefix(1).uppercased() + lemma.dropFirst().lowercased() }
                 chosen = e; confirmed = true
             }
             if content.isEmpty { aligned = nil; alignedRange = nil }

@@ -180,6 +180,8 @@ final class HoverController {
     }
 
     static func isWorthSaving(_ r: LookupResult) -> Bool {
+        // A word the translator handed back unchanged is a name or a brand ("TIAGOVSKI"), not vocabulary.
+        if r.entry.map({ $0.id.hasSuffix("#mt") }) ?? true, Lexicon.fold(r.term) == Lexicon.fold(r.word) { return false }
         guard let pos = r.entry?.pos else { return r.headword.count > 1 }
         return ![.article, .pronoun, .numeral].contains(pos)
     }
