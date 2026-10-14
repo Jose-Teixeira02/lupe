@@ -67,9 +67,11 @@ extension Lexicon {
                 used.insert(best)
             }
             guard ok, used.contains(hovered), let lo = used.min(), let hi = used.max() else { continue }
-            // Phrases made only of small words ("noch nicht", "so weit") must be contiguous; others may be split.
+            // Phrases made only of small words ("noch nicht", "so weit") must be contiguous, unless the pack marks
+            // a gap with "…" ("um … zu", "entweder … oder"); others may be split by a few words.
+            let hasGap = entry.lemma.contains("…")
             let allSmall = pattern.allSatisfy { Stopwords.de.contains($0) || $0.count <= 4 || $0 == Self.reflexiveKey }
-            let maxSpan = allSmall ? pattern.count - 1 : pattern.count + 5
+            let maxSpan = hasGap ? pattern.count + 10 : (allSmall ? pattern.count - 1 : pattern.count + 5)
             guard hi - lo <= maxSpan else { continue }
             found.append((entry, pattern.count))
         }

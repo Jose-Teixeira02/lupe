@@ -169,6 +169,11 @@ public final class LookupEngine: @unchecked Sendable {
             }
             if entry != nil {
                 entry?.glosses = meanings.mapValues { [$0] }
+            } else if lexicon.info.capitalizeNouns, word.first?.isUppercase == true, !sentenceInitial || token?.wordClass == .noun,
+                      let english = meanings["en"], let gender = await guessGender(of: source, english: english) {
+                // A noun the pack doesn't know: "the thumb" → "der Daumen" gives us its article.
+                entry = LexEntry(rank: 40_000, lemma: source, pos: .noun, gender: gender, forms: "",
+                                 glosses: meanings.mapValues { [$0] }, cefr: "C1", id: "\(source)#n")
             }
         }
         let headword = entry.map { lexicon.display($0) } ?? (token?.lemma ?? word)
@@ -311,6 +316,21 @@ public final class LookupEngine: @unchecked Sendable {
                             direction: .toTarget, entry: chosen, headword: headword, meanings: meanings,
                             contextTranslation: translation?.text, aligned: aligned, alignedRange: alignedRange,
                             confirmedByContext: confirmed, compoundHead: head, expression: expression)
+    }
+
+    /// Gender of a German noun outside the pack, by translating "the <English meaning>" back into German.
+    func guessGender(of noun: String, english: String) async -> Gender? {
+        let gloss = english.split(separator: ",").first.map(String.init)?.trimmingCharacters(in: .whitespaces) ?? english
+        guard !gloss.isEmpty, gloss.split(separator: " ").count <= 3,
+              let back = try? await translator.translate("the \(gloss)", from: "en", to: target) else { return nil }
+        let words = back.split(separator: " ").map { Lexicon.fold(String($0)) }
+        guard words.count >= 2, words.last == Lexicon.fold(noun) || Lexicon.fold(noun).hasPrefix(words.last ?? "#") else { return nil }
+        switch words.first {
+        case "der": return .masculine
+        case "die": return gloss.hasSuffix("s") && !gloss.hasSuffix("ss") ? .plural : .feminine
+        case "das": return .neuter
+        default: return nil
+        }
     }
 
     /// Machine translations of single words come back capitalised ("Porta da frente"); glosses read better lowercased.
@@ -458,9 +478,19 @@ public final class LookupEngine: @unchecked Sendable {
         let tokens = TextTools.analyze(germanText, language: target)
         var seen = Set<String>()
         var out: [WordGloss] = []
+        // Expressions first ("um … kümmern" → sich kümmern um); their words aren't listed again.
+        var covered = Set<Int>()
+        for (i, t) in tokens.enumerated() where !covered.contains(i) {
+            guard let phrase = lexicon.expressions(in: tokens, around: t).first, seen.insert(phrase.id).inserted else { continue }
+            let pattern = Set(lexicon.phrasePatterns.first { $0.entry.id == phrase.id }?.pattern ?? [])
+            for (j, u) in tokens.enumerated() where pattern.contains(Lexicon.phraseKey(u)) || pattern.contains(Lexicon.fold(u.text)) {
+                covered.insert(j)
+            }
+            out.append(WordGloss(surface: phrase.lemma, entry: phrase, display: phrase.lemma, meaning: phrase.gloss(primaryHelper)))
+        }
         for (i, t) in tokens.enumerated() {
             let folded = Lexicon.fold(t.text)
-            if Stopwords.de.contains(folded) || folded.count < 2 { continue }
+            if covered.contains(i) || Stopwords.de.contains(folded) || folded.count < 2 { continue }
             let capitalized = t.isCapitalized && i > 0
             var entry = lexicon.bestEntry(forGerman: t.text, lemma: t.lemma, capitalized: capitalized || (i == 0 && t.isCapitalized && t.wordClass == .noun))
             if let e = entry, e.pos == .verb { entry = separableVerb(base: e, token: t, tokens: tokens, text: germanText) ?? e }
@@ -468,7 +498,8 @@ public final class LookupEngine: @unchecked Sendable {
             if let e = entry, [.article, .pronoun, .conjunction].contains(e.pos) { continue }
             let key = entry?.id ?? folded
             if !seen.insert(key).inserted { continue }
-            out.append(WordGloss(surface: t.text, entry: entry, display: entry.map { lexicon.display($0) } ?? t.lemma,
+            out.append(WordGloss(surface: t.text, entry: entry,
+                                 display: entry.map { lexicon.display($0) } ?? (Lexicon.restoringUmlauts(t.lemma) ?? t.lemma),
                                  meaning: entry?.gloss(primaryHelper)))
         }
         return out

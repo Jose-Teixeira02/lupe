@@ -197,6 +197,8 @@ func run() async {
     check(expression("Er gibt mir das Buch.", "gibt") == nil, "plain geben is not 'es gibt'")
     check(expression("Ich habe noch nicht gegessen.", "nicht") == "noch nicht", "small-word phrase noch nicht")
     check(expression("Noch habe ich das Buch nicht.", "nicht") == nil, "small-word phrases must be contiguous")
+    check(expression("Ich gehe zum Supermarkt, um Brot zu kaufen.", "um") == "um … zu", "split construction um … zu")
+    check(expression("Er ging, ohne ein Wort zu sagen.", "ohne") == "ohne … zu", "split construction ohne … zu")
 
     // MARK: Lookup engine (fake translator)
     section("Lookup engine")
@@ -223,6 +225,9 @@ func run() async {
     check(r5.entry?.lemma == "kommen", "'mit dem Bus' doesn't make mitkommen, got \(r5.entry?.lemma ?? "nil")")
     let r6 = await engine.lookup(word: "Kinder", context: "Die Kinder spielen im Garten.")
     check(r6.direction == .fromTarget && r6.entry?.lemma == "Kind" && r6.meanings["en"]?.contains("child") == true, "German word → meaning")
+    check(lexicon.bestEntry(forGerman: "Kannst", lemma: "koennen")?.lemma == "können", "umlaut restoration: koennen → können")
+    let bd2 = engine.breakdown(of: "Kannst du dich dieses Wochenende um meine Katze kümmern?")
+    check(bd2.contains { $0.display == "sich kümmern um" } && !bd2.contains { $0.display == "um" }, "breakdown groups sich kümmern um (got \(bd2.map(\.display)))")
     let bd = engine.breakdown(of: "Ich lege die Bücher auf den Tisch.")
     check(bd.contains { $0.entry?.lemma == "Buch" } && bd.contains { $0.display == "der Tisch" }, "phrase breakdown finds nouns with articles")
 
@@ -339,6 +344,7 @@ func run() async {
         check(lock.meanings["en"]?.hasPrefix("lock") == true && castle.meanings["en"]?.hasPrefix("castle") == true, "Schloss → lock vs castle by context")
         check(lock.senseHere == "lock", "senseHere shows the meaning used (got \(lock.senseHere ?? "nil"))")
         let thumbs = await live("Daumen", "Ich drücke dir die Daumen!")
+        check(thumbs.entry?.gender == .masculine, "unknown noun gets its article from a back-translation (Daumen → der, got \(thumbs.headword))")
         check(thumbs.expression?.german == "Daumen drücken", "Daumen → expression Daumen drücken (got \(thumbs.expression?.german ?? "nil"))")
         let rely = await live("verlassen", "Er hat sich auf seinen Freund verlassen.")
         check(rely.expression?.german == "sich verlassen auf", "verlassen + sich + auf → sich verlassen auf")

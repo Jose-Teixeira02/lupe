@@ -1,5 +1,6 @@
 import AppKit
 import ApplicationServices
+import LupeCore
 import Combine
 import CoreGraphics
 
@@ -22,8 +23,25 @@ final class Permissions: ObservableObject {
     func refresh() {
         let sr = CGPreflightScreenCaptureAccess()
         let ax = AXIsProcessTrusted()
+        let changed = sr != screenRecording || ax != accessibility || !wroteStatus
         if sr != screenRecording { screenRecording = sr }
         if ax != accessibility { accessibility = ax }
+        if changed { writeStatus() }
+    }
+
+    private var wroteStatus = false
+
+    /// `status.json` in the data folder, so the permission state can be checked from a terminal.
+    private func writeStatus() {
+        wroteStatus = true
+        let info: [String: Any] = [
+            "screenRecording": screenRecording, "accessibility": accessibility,
+            "version": Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "dev",
+            "updated": ISO8601DateFormatter().string(from: Date()),
+        ]
+        if let data = try? JSONSerialization.data(withJSONObject: info, options: [.prettyPrinted, .sortedKeys]) {
+            try? data.write(to: LupePaths.appSupport.appendingPathComponent("status.json"), options: .atomic)
+        }
     }
 
     /// Shows the system prompt once; afterwards macOS only allows toggling it in System Settings.

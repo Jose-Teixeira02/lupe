@@ -43,7 +43,7 @@ enum SprinkleStyle: String, CaseIterable, Identifiable {
 /// User preferences, persisted in UserDefaults. Every property saves on change.
 @MainActor
 final class LupeSettings: ObservableObject {
-    private let defaults: UserDefaults
+    let defaults: UserDefaults
 
     @Published var hasOnboarded: Bool { didSet { save("hasOnboarded", hasOnboarded) } }
     /// Target language pack code ("de").

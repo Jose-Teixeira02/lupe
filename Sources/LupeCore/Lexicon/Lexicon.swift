@@ -152,6 +152,16 @@ public final class Lexicon: @unchecked Sendable {
         }
     }
 
+    /// "koennen" → "können", "Aerzte" → "Ärzte"; nil when there's nothing to restore.
+    public static func restoringUmlauts(_ s: String) -> String? {
+        guard s.range(of: "ae|oe|ue", options: [.regularExpression, .caseInsensitive]) != nil else { return nil }
+        var out = s
+        for (a, b) in [("ae", "ä"), ("oe", "ö"), ("ue", "ü"), ("Ae", "Ä"), ("Oe", "Ö"), ("Ue", "Ü")] {
+            out = out.replacingOccurrences(of: a, with: b)
+        }
+        return out
+    }
+
     /// Lowercase, without surrounding punctuation. Keeps umlauts/ß (they matter in German).
     public static func fold(_ s: String) -> String {
         s.lowercased().trimmingCharacters(in: CharacterSet.punctuationCharacters.union(.whitespaces))
@@ -214,6 +224,8 @@ public final class Lexicon: @unchecked Sendable {
     public func bestEntry(forGerman word: String, lemma: String? = nil, capitalized: Bool = false) -> LexEntry? {
         var candidates = entries(forGerman: word)
         if candidates.isEmpty, let lemma { candidates = entries(forGerman: lemma) }
+        // The system tagger sometimes spells umlauts out ("koennen" for "können").
+        if candidates.isEmpty, let lemma, let restored = Self.restoringUmlauts(lemma) { candidates = entries(forGerman: restored) }
         // Lowercase words are never nouns in German: "rufe" is a form of rufen, not der Ruf.
         if info.capitalizeNouns, !capitalized, word.first?.isLowercase == true,
            candidates.allSatisfy({ $0.pos == .noun }), let verb = guessVerb(word) {

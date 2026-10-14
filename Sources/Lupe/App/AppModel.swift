@@ -42,7 +42,7 @@ final class AppModel: ObservableObject {
         b.journey = j
         bank = b
         journey = j
-        recentAsks = UserDefaults.standard.stringArray(forKey: "recentAsks") ?? []
+        recentAsks = settings.defaults.stringArray(forKey: "recentAsks") ?? []
 
         // Forward nested changes so SwiftUI views observing the model refresh.
         bank.objectWillChange.sink { [weak self] _ in self?.objectWillChange.send() }.store(in: &nested)
@@ -175,7 +175,7 @@ final class AppModel: ObservableObject {
         recentAsks.removeAll { $0 == t }
         recentAsks.insert(t, at: 0)
         if recentAsks.count > 12 { recentAsks.removeLast(recentAsks.count - 12) }
-        UserDefaults.standard.set(recentAsks, forKey: "recentAsks")
+        settings.defaults.set(recentAsks, forKey: "recentAsks")
     }
 
     var sprinklesActive: Bool {
