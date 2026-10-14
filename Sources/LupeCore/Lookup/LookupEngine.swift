@@ -153,7 +153,7 @@ public final class LookupEngine: @unchecked Sendable {
         // The sense used here picks the homograph and orders the meanings ("Bank" → bench, not bank).
         var senseHere: String?
         var senseIndex: Int?
-        if let aligned = translation?.aligned.map(Self.trimFunctionWords), !aligned.isEmpty, let e = entry {
+        if let aligned = translation?.aligned.map({ Self.trimFunctionWords($0, language: primaryHelper) }), !aligned.isEmpty, let e = entry {
             senseHere = aligned
             let (best, index) = homograph(for: e, word: word, lemma: token?.lemma, aligned: aligned)
             entry = best
@@ -321,9 +321,11 @@ public final class LookupEngine: @unchecked Sendable {
     }
 
     /// "delays will" → "delays", "to the station" → "station": the words that carry the meaning.
-    static func trimFunctionWords(_ s: String) -> String {
-        let function: Set<String> = Stopwords.en.union(["will", "would", "has", "have", "had", "is", "are", "was", "were", "be", "been",
-                                                          "do", "does", "did", "shall", "should", "can", "could"])
+    static func trimFunctionWords(_ s: String, language: String = "en") -> String {
+        let auxiliaries: Set<String> = language == "pt"
+            ? ["vai", "vou", "foi", "era", "é", "está", "estão", "tem", "têm", "há"]
+            : ["will", "would", "has", "have", "had", "is", "are", "was", "were", "be", "been", "do", "does", "did", "shall", "should", "can", "could"]
+        let function = Stopwords.set(for: language).union(auxiliaries)
         var words = s.split(separator: " ").map(String.init)
         while words.count > 1, let first = words.first, function.contains(first.lowercased()) { words.removeFirst() }
         while words.count > 1, let last = words.last, function.contains(last.lowercased()) { words.removeLast() }
@@ -339,7 +341,7 @@ public final class LookupEngine: @unchecked Sendable {
         guard words.count >= 2, words.last == Lexicon.fold(noun) || Lexicon.fold(noun).hasPrefix(words.last ?? "#") else { return nil }
         switch words.first {
         case "der": return .masculine
-        case "die": return gloss.hasSuffix("s") && !gloss.hasSuffix("ss") ? .plural : .feminine
+        case "die": return .feminine // lemmas are singular; "die" here is feminine, not plural
         case "das": return .neuter
         default: return nil
         }
@@ -548,7 +550,7 @@ public final class LookupEngine: @unchecked Sendable {
             let key = entry?.id ?? folded
             if !seen.insert(key).inserted { continue }
             out.append(WordGloss(surface: t.text, entry: entry,
-                                 display: entry.map { lexicon.display($0) } ?? (Lexicon.restoringUmlauts(t.lemma) ?? t.lemma),
+                                 display: entry.map { lexicon.display($0) } ?? t.lemma,
                                  meaning: entry?.gloss(primaryHelper)))
         }
         return out

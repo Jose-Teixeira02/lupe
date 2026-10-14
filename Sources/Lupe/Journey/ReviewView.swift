@@ -67,7 +67,7 @@ final class ReviewSession: ObservableObject {
         // seeing the same card again immediately teaches nothing.
         if let updated = model.bank.card(id: c.id), updated.memory.due.timeIntervalSinceNow < 20 * 60 {
             let gap = rating == .again ? 3 : 6
-            if queue.count >= 2 {
+            if !queue.isEmpty {
                 queue.insert(c.id, at: min(queue.count, gap))
             } else {
                 comingBack += 1

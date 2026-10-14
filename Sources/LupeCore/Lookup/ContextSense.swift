@@ -206,9 +206,8 @@ extension LookupEngine {
                 first = germanTokens[i - 1]
                 phraseTokens.insert(first, at: 0)
             }
-            var german = phraseTokens.map(\.text).joined(separator: " ")
-            if !isNoun || first.wordClass != .noun && !first.isCapitalized { german = german.prefix(1).lowercased() + german.dropFirst() }
-            if isNoun { german = phraseTokens.map(\.text).joined(separator: " ") }
+            let joined = phraseTokens.map(\.text).joined(separator: " ")
+            var german = isNoun ? joined : joined.prefix(1).lowercased() + joined.dropFirst()
             // Only adjective/adverb phrases get the sentence's verb ("zu spät kommen"); "am Ende" stands alone.
             if token.wordClass == .verb, !isNoun {
                 // The verb of the same translated sentence, nearest to the phrase ("ich komme … zu spät" → kommen).

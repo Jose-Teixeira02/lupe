@@ -217,7 +217,9 @@ final class HoverController {
 
     private func markKnown() {
         guard let r = state.result else { return }
-        model.bank.markKnown(key: r.cardKey)
+        var saved: UUID?
+        if case .saved(let id, _) = state.saved { saved = id }
+        model.markKnown(r, savedCard: saved)
         state.saved = .known
     }
 

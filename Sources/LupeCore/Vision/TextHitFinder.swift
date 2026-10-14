@@ -112,7 +112,10 @@ public enum TextHitFinder {
             // closing punctuation is a heading, a label or a ruler, not the start of this sentence.
             let ending = a.text.trimmingCharacters(in: .whitespaces).last
             let continues = ending.map { ",;:-–".contains($0) || $0.isLowercase && b.text.first?.isLowercase == true } ?? false
-            let headingAbove = a.rect.width < b.rect.width * 0.7 && !continues && !(ending.map { ".!?".contains($0) } ?? false)
+            // A wrapped line can end early before a long word, so width alone isn't enough: a heading is either
+            // much narrower (labels, rulers) or set in larger type.
+            let headingAbove = !continues && !(ending.map { ".!?".contains($0) } ?? false)
+                && (a.rect.width < b.rect.width * 0.5 || (!shortLine && size > 1.12))
             return gap > -h * 0.5 && gap < h * 1.3 && leftAligned && sameSize && !headingAbove
         }
         var lo = pos, hi = pos

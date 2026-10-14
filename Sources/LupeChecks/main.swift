@@ -356,13 +356,21 @@ func run() async {
     let run = pieces[2].words.first { $0.text == "running" }!.rect.denormalized(in: f).center
     check(TextHitFinder.hit(in: pieces, frame: f, at: run)?.context == "Sorry, I'm running late.", "first piece keeps its own sentence")
     let headed = [
-        piece("Bahn kündigt neue Verbindungen an", x: 0.02, y: 0.70, w: 0.45),
+        piece("Bahn kündigt neue Verbindungen an", x: 0.02, y: 0.70, w: 0.66), // larger type: wider per character
         piece("Die Bahn will ab Dezember mehr Züge zwischen Berlin und München", x: 0.02, y: 0.655, w: 0.9),
         piece("fahren lassen. Viele Pendler hoffen auf weniger Verspätungen.", x: 0.02, y: 0.615, w: 0.85),
     ]
     let zuege = headed[1].words.first { $0.text == "Züge" }!.rect.denormalized(in: f).center
     check(TextHitFinder.hit(in: headed, frame: f, at: zuege)?.context == "Die Bahn will ab Dezember mehr Züge zwischen Berlin und München fahren lassen.",
           "a heading above is not glued to the sentence")
+    let wrapped = [
+        // Same font (same width per character); the first line breaks early before a very long word.
+        piece("Gestern habe ich mir einen mit dem", x: 0.02, y: 0.70, w: 34 * 0.9 / 63),
+        piece("Unterhaltungselektronikgeschäft-Gutschein gekauft und war froh.", x: 0.02, y: 0.655, w: 0.9),
+    ]
+    let froh = wrapped[1].words.first { $0.text == "froh" }!.rect.denormalized(in: f).center
+    check(TextHitFinder.hit(in: wrapped, frame: f, at: froh)?.context.hasPrefix("Gestern habe ich") == true,
+          "a line that wraps early before a long word still joins its sentence")
     let columns = [piece("Left column text here", x: 0.02, y: 0.5, w: 0.3), piece("Right column far away", x: 0.7, y: 0.5, w: 0.28)]
     check(TextHitFinder.visualLines(columns, aspect: 1000.0 / 600).count == 2, "distant columns are not merged")
 

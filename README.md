@@ -47,8 +47,9 @@ normal.
 
 > **Permissions and rebuilds.** There's no Apple developer certificate on this Mac, so the app is
 > signed ad hoc with a fixed identity (`identifier "local.lupe.Lupe"`). That lets permissions survive
-> rebuilds. If macOS ever stops honouring them after an update, toggle Lupe off and on in System
-> Settings → Privacy & Security. To use a real certificate instead: Keychain Access → Certificate
+> rebuilds. The trade-off: another local program signed with the same identifier would match those
+> grants too. A certificate (below) binds them to your own key. If macOS ever stops honouring them
+> after an update, toggle Lupe off and on in System Settings → Privacy & Security. To use a real certificate instead: Keychain Access → Certificate
 > Assistant → Create a Certificate…, name it **Lupe Dev**, type **Code Signing**. `build-app.sh` picks
 > it up automatically.
 

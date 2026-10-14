@@ -158,6 +158,17 @@ final class AppModel: ObservableObject {
                         encounter: encounter(for: r, app: app), source: source)
     }
 
+    /// "I know it": marks the card that was saved for this lookup (the expression, when there is one).
+    func markKnown(_ r: LookupResult, savedCard: UUID?) {
+        if let id = savedCard {
+            bank.setStatus(id, .known)
+        } else if let ex = r.expression, ex.origin == .pack || ex.entry == nil {
+            bank.markKnown(key: ex.entry?.pos == .phrase ? ex.entry!.id : Card.key(for: ex.german))
+        } else {
+            bank.markKnown(key: r.cardKey)
+        }
+    }
+
     /// Saves a whole phrase from the Ask bar or Lens.
     @discardableResult
     func savePhrase(german: String, meaning: String, meaningLanguage: String, source: CardSource) -> (card: Card, created: Bool) {

@@ -87,6 +87,8 @@ echo "▸ Signing ($([[ $IDENTITY == - ]] && echo ad hoc || echo $IDENTITY))…"
 if [[ $IDENTITY == "-" ]]; then
   # Ad-hoc signatures normally pin permissions to this exact build (its cdhash). A designated
   # requirement on the bundle identifier lets Screen Recording / Accessibility grants survive rebuilds.
+  # Trade-off: any local binary ad-hoc signed as local.lupe.Lupe would match the same grants. Create a
+  # "Lupe Dev" code-signing certificate (see README) to bind the grants to your own key instead.
   codesign --force --deep --sign - --identifier local.lupe.Lupe \
     --requirements '=designated => identifier "local.lupe.Lupe"' "$APP"
 else

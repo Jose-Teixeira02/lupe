@@ -77,16 +77,23 @@ public enum ReadingDocument {
             let analyzed = TextTools.analyze(p, language: language)
             let ranges = TextTools.wordRanges(in: p)
             var tokens: [ReadingToken] = []
+            var cursor = 0 // walks `analyzed` alongside `ranges` (both in text order)
+            var previousGap = ""
             for (i, r) in ranges.enumerated() {
                 let end = i + 1 < ranges.count ? ranges[i + 1].lowerBound : p.endIndex
                 let word = String(p[r])
                 var entry: LexEntry?
                 if language == engine.target, TextTools.isMostlyLetters(word) {
-                    let token = analyzed.first { $0.range.overlaps(r) }
-                    let capitalized = word.first?.isUppercase == true && i > 0 && !(p[..<r.lowerBound].trimmingCharacters(in: .whitespaces).last.map { ".!?:„\"".contains($0) } ?? false)
+                    while cursor < analyzed.count, analyzed[cursor].range.upperBound <= r.lowerBound { cursor += 1 }
+                    let token = cursor < analyzed.count && analyzed[cursor].range.overlaps(r) ? analyzed[cursor] : nil
+                    // Capitalised mid-sentence means a noun; after ". " or a quote it's just the sentence start.
+                    let sentenceStart = previousGap.trimmingCharacters(in: .whitespaces).last.map { ".!?:„\"".contains($0) } ?? true
+                    let capitalized = word.first?.isUppercase == true && i > 0 && !sentenceStart
                     entry = engine.lexicon.bestEntry(forGerman: word, lemma: token?.lemma, capitalized: capitalized)
                 }
-                tokens.append(ReadingToken(id: nextID, text: word, trailing: String(p[r.upperBound..<end]), paragraph: pi, range: r, entry: entry))
+                let trailing = String(p[r.upperBound..<end])
+                tokens.append(ReadingToken(id: nextID, text: word, trailing: trailing, paragraph: pi, range: r, entry: entry))
+                previousGap = trailing
                 nextID += 1
             }
             let leading = ranges.first.map { String(p[..<$0.lowerBound]) } ?? p

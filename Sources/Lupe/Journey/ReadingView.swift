@@ -25,9 +25,15 @@ final class ReadingState: ObservableObject {
         self.model = model
     }
 
+    private var storiesLanguage: String?
+
     func loadStories() {
-        guard stories.isEmpty else { return }
+        guard storiesLanguage != model.target else { return }
+        storiesLanguage = model.target
         stories = Story.load(language: model.target)
+        storyID = nil
+        customText = nil
+        paragraphs = []
         if storyID == nil, customText == nil, let first = stories.first { open(first) }
     }
 
@@ -55,11 +61,19 @@ final class ReadingState: ObservableObject {
         parse(customText!)
     }
 
+    private var parseTask: Task<Void, Never>?
+
     private func parse(_ text: String) {
-        paragraphs = ReadingDocument.parse(text, engine: model.engine)
         selected = nil
         translations = [:]
         card.reset(.loading(""))
+        parseTask?.cancel()
+        let engine = model.engine
+        parseTask = Task {
+            let parsed = await Task.detached(priority: .userInitiated) { ReadingDocument.parse(text, engine: engine) }.value
+            guard !Task.isCancelled else { return }
+            paragraphs = parsed
+        }
     }
 
     // MARK: Words
@@ -100,7 +114,9 @@ final class ReadingState: ObservableObject {
             },
             markKnown: { [weak self] in
                 guard let self, let r = self.card.result else { return }
-                self.model.bank.markKnown(key: r.cardKey)
+                var saved: UUID?
+                if case .saved(let id, _) = self.card.saved { saved = id }
+                self.model.markKnown(r, savedCard: saved)
                 self.card.saved = .known
             },
             explain: { [weak self] in self?.explain() }
