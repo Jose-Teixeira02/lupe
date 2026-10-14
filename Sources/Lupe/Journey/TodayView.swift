@@ -54,6 +54,7 @@ struct TodayView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Daily goal").font(.system(size: 11)).foregroundStyle(.secondary)
                         Text("\(j.today.xp) / \(j.dailyGoalXP) XP").font(.system(size: 18, weight: .bold, design: .rounded))
+                            .lineLimit(1).minimumScaleFactor(0.7)
                     }
                 }
             }
@@ -61,6 +62,7 @@ struct TodayView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Streak").font(.system(size: 11)).foregroundStyle(.secondary)
                     Text("🔥 \(j.streak) day\(j.streak == 1 ? "" : "s")").font(.system(size: 18, weight: .bold, design: .rounded))
+                        .lineLimit(1).minimumScaleFactor(0.7)
                     Text("best \(j.bestStreak)").font(.system(size: 11)).foregroundStyle(.tertiary)
                 }
             }
@@ -80,6 +82,7 @@ struct TodayView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Vocabulary").font(.system(size: 11)).foregroundStyle(.secondary)
                     Text("~\(model.estimatedKnownWords) words").font(.system(size: 18, weight: .bold, design: .rounded))
+                        .lineLimit(1).minimumScaleFactor(0.7)
                     Text("\(model.bank.cards.count) in your deck").font(.system(size: 11)).foregroundStyle(.tertiary)
                 }
             }

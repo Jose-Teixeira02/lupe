@@ -11,6 +11,7 @@ on your Mac.
 | **Sprinkles** | A small budget of German tags over English or Portuguese words on screen, picked from what you're learning. Over German text, tags show meanings for the hard words instead. | `⌃⌥I` |
 | **Lens** | Translates every block of text on the screen in place. Hover a block to listen, copy or save it. | `⌃⌥L` |
 | **Selection** | Translates the selected text. Without the Accessibility permission, use right-click → Services → *Translate with Lupe* instead. | `⌃⌥S` |
+| **Reading room** | Graded stories (A1–B1, plus one in English and one in Portuguese) or any text you paste. Click a word to see what it means in that sentence. Nouns are coloured by gender and your words are underlined. Works with no permissions. | Journey → Read |
 | **Journey** | Daily review with spaced repetition (FSRS), streaks, your words with the sentences you met them in, and your CEFR path. | `⌃⌥J` |
 
 Every word you look up becomes a card with **your sentence** and **the app you met it in**. Reviews
@@ -44,12 +45,12 @@ Lupe never turns these on itself. The menu and Settings have buttons that open t
 Settings pane. macOS asks again every few weeks whether apps may keep recording the screen; that's
 normal.
 
-> **Rebuilding resets permissions.** The app is signed "ad hoc" because this Mac has no developer
-> certificate, so macOS treats every rebuild as a new app. After a rebuild, toggle Lupe off and on
-> again in System Settings → Privacy & Security. To avoid this, create a self-signed certificate
-> once: open Keychain Access → Certificate Assistant → Create a Certificate…, name it **Lupe Dev**,
-> set Certificate Type to **Code Signing**, then rebuild. `build-app.sh` uses that certificate
-> automatically when it exists.
+> **Permissions and rebuilds.** There's no Apple developer certificate on this Mac, so the app is
+> signed ad hoc with a fixed identity (`identifier "local.lupe.Lupe"`). That lets permissions survive
+> rebuilds. If macOS ever stops honouring them after an update, toggle Lupe off and on in System
+> Settings → Privacy & Security. To use a real certificate instead: Keychain Access → Certificate
+> Assistant → Create a Certificate…, name it **Lupe Dev**, type **Code Signing**. `build-app.sh` picks
+> it up automatically.
 
 ## Privacy
 
@@ -61,6 +62,25 @@ normal.
 - Password managers are excluded from reading by default. You can add more apps in Settings.
 - Your deck lives in `~/Library/Application Support/Lupe/de/` as plain JSON (`cards.json`,
   `journey.json`). You can export it for Anki from Journey → Words → Export.
+
+## Context decides the meaning
+
+The same word means different things in different sentences, so Lupe always looks at the whole sentence:
+
+| You point at | In this sentence | Lupe shows |
+|---|---|---|
+| *Bank* | Ich sitze auf der **Bank** im Park. | die Bank, here: **bench** |
+| *Bank* | Ich bringe das Geld zur **Bank**. | die Bank, here: **bank** |
+| *Schloss* | Das **Schloss** an der Tür ist kaputt. | das Schloss, here: **lock** (castle comes second) |
+| *Daumen* | Ich drücke dir die **Daumen**! | expression **Daumen drücken**: to keep one's fingers crossed |
+| *verlassen* | Er hat sich auf seinen Freund **verlassen**. | expression **sich verlassen auf**: to rely on |
+| *bank* | We had a picnic on the river **bank**. | **das Ufer** (from *Flussufer*), not die Bank |
+| *gave* | She **gave** up smoking. | **aufhören** / **aufgeben**, not *geben* or the auxiliary *hat* |
+| *running* | I'm **running** late. | expression **zu spät kommen** |
+| *light* | This bag is very **light**. | **leicht** (but **das Licht** for a lamp) |
+
+When you type a single word in the Ask bar without a sentence, it lists the possible meanings instead
+of guessing: "bank" gives *die Bank* (money) and *das Ufer* (river).
 
 ## How it decides what to show
 
@@ -120,7 +140,8 @@ scripts/build-app.sh        # build ./build/Lupe.app (add --debug for a faster d
 | `Sources/LupeCore` | Testable engine: lexicon packs, text tools, aligned translation, OCR and hit-finding, the lookup engine, sprinkle selection, FSRS, word bank, journey, tutors |
 | `Sources/Lupe` | The app: menu bar, global shortcuts (Carbon), ScreenCaptureKit capture, Accessibility reader, hover card, Ask bar, Sprinkles overlay, Lens, Journey window, onboarding |
 | `Sources/LupeChecks` | Self-check runner (`swift test` needs full Xcode) |
-| `packs/de` | The German lexicon |
+| `Sources/LupeDebug` | Runs the hover pipeline (OCR → word → context lookup → sprinkles) on any screenshot: `swift run LupeDebug shot.png word1 word2` |
+| `packs/de` | The German lexicon (core words, idioms, verb + preposition patterns) and `stories/` for the Reading room |
 | `docs/` | `ADR-001`, the architecture decision record and the reasoning behind this design |
 
 The build uses only the Command Line Tools. Because of that, the SwiftUI views use observable

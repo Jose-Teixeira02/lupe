@@ -116,6 +116,7 @@ struct MenuView: View {
         VStack(spacing: 2) {
             row("character.magnify", "Ask: how do I say…?", Shortcuts.ask.display, action: actions.openAsk)
             row("text.viewfinder", "Translate this screen", Shortcuts.lens.display, action: actions.openLens)
+            row("book", "Read a short story", "") { actions.openJourney(.read) }
             row("map", "Open your Journey", Shortcuts.journey.display) { actions.openJourney(.today) }
         }
     }
@@ -126,7 +127,7 @@ struct MenuView: View {
                 Image(systemName: symbol).frame(width: 18).foregroundStyle(Theme.accent)
                 Text(title).font(.system(size: 13))
                 Spacer()
-                KeyHint(keys: keys)
+                if !keys.isEmpty { KeyHint(keys: keys) }
             }
             .padding(.vertical, 5).padding(.horizontal, 4)
             .contentShape(Rectangle())

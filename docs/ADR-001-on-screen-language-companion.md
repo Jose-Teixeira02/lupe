@@ -185,6 +185,23 @@ What would disappoint me, and is now designed against:
   unavailable. The UI uses observable objects, and a `LupeChecks` executable replaces `swift test`.
 * **Capture exclusion:** only Lupe's *floating* windows (tags, cards, lens) are hidden from capture.
   Hiding the Journey window too would let OCR "see through" it.
+* **Context is the product.** The hover card decides the meaning from the sentence in three ways:
+  1. **Alignment of the hovered word.** This picks homographs and orders senses.
+  2. **Alignment of a two-word span.** This catches phrasal verbs and expressions: "gave up" →
+     *aufhören*, "running late" → *zu spät kommen*.
+  3. **Pack patterns matched on lemmas.** These cover idioms and verbs with prepositions (*Daumen drücken*,
+     *sich verlassen auf*, *um … zu*).
+
+  Idioms are always translated literally by the machine ("I only understand the station"), so the
+  pack is essential for them.
+* **Test on real captures, not just synthetic images.** Running the pipeline on TextEdit screenshots
+  found bugs the synthetic tests couldn't:
+  * Vision splits one visual line into pieces, so they must be merged before sentences are rebuilt.
+  * Headings and rulers sit next to body text. Character width is the reliable font-size signal,
+    because OCR box heights vary by 45% with descenders.
+  * A capitalised noun (*Treffen*) was mistaken for a verb.
+* **Permissions without a certificate:** an ad-hoc signature with an explicit designated requirement
+  (`identifier "local.lupe.Lupe"`) keeps privacy grants across rebuilds.
 
 ## Consequences
 
