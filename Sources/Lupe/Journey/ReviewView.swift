@@ -11,6 +11,8 @@ final class ReviewSession: ObservableObject {
     @Published private(set) var correct = 0
     @Published private(set) var started = false
     @Published private(set) var startedAt = Date()
+    /// Cards in a short learning step that will come back later today (not shown again right away).
+    @Published private(set) var comingBack = 0
 
     private let model: AppModel
 
@@ -25,6 +27,7 @@ final class ReviewSession: ObservableObject {
         queue = model.bank.dueQueue(newLimit: model.settings.dailyNewCards).map(\.id)
         reviewed = 0
         correct = 0
+        comingBack = 0
         started = true
         startedAt = Date()
         next()
@@ -60,10 +63,15 @@ final class ReviewSession: ObservableObject {
         model.bank.review(c.id, rating: rating)
         reviewed += 1
         if rating != .again { correct += 1 }
-        // Short learning steps come back later in this session.
+        // Short learning steps come back later in this session, but only after a few other cards;
+        // seeing the same card again immediately teaches nothing.
         if let updated = model.bank.card(id: c.id), updated.memory.due.timeIntervalSinceNow < 20 * 60 {
-            let pos = min(queue.count, rating == .again ? 3 : 6)
-            queue.insert(c.id, at: pos)
+            let gap = rating == .again ? 3 : 6
+            if queue.count >= 2 {
+                queue.insert(c.id, at: min(queue.count, gap))
+            } else {
+                comingBack += 1
+            }
         }
         next()
     }
@@ -116,7 +124,7 @@ struct ReviewView: View {
                 Text("Nothing is due. Go read something in German or English and hold ⌃ on words you don't know: they'll show up here.")
                     .multilineTextAlignment(.center).foregroundStyle(.secondary).frame(maxWidth: 420)
             } else {
-                Text("\(due.count) cards ready").font(.system(size: 26, weight: .bold, design: .rounded))
+                Text(due.count == 1 ? "1 card ready" : "\(due.count) cards ready").font(.system(size: 26, weight: .bold, design: .rounded))
                 Text("\(due.count - newCount) reviews · \(newCount) new · about \(max(1, due.count / 6)) min")
                     .foregroundStyle(.secondary)
                 Button { session.start() } label: {
@@ -145,6 +153,11 @@ struct ReviewView: View {
                 stat("🔥 \(model.journey.streak)", "day streak")
             }
             Text(encouragement(accuracy)).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(maxWidth: 420)
+            if session.comingBack > 0 {
+                Label(session.comingBack == 1 ? "1 card comes back in a few minutes for a second look."
+                      : "\(session.comingBack) cards come back in a few minutes for a second look.", systemImage: "clock.arrow.circlepath")
+                    .font(.system(size: 12)).foregroundStyle(.secondary)
+            }
             Button("Done") { session.stop() }.keyboardShortcut(.defaultAction)
             Spacer()
         }

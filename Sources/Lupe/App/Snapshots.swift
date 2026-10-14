@@ -79,6 +79,14 @@ enum Snapshots {
         save(ReviewView(session: session, model: model), dir, "review-back-dark", size: size, dark: true)
         save(SettingsView(model: model, settings: settings, permissions: model.permissions, reminderChanged: {}), dir, "settings", size: CGSize(width: 760, height: 1500))
         save(HelpView(), dir, "help", size: size)
+        let reading = ReadingState(model: model)
+        reading.loadStories()
+        if let story = reading.stories.first(where: { $0.level == "B1" }) { reading.open(story) }
+        if let t = reading.paragraphs.flatMap(\.tokens).first(where: { $0.text == "Bahnhof" }) {
+            reading.select(t)
+            _ = wait { try? await Task.sleep(for: .seconds(3)); return true }
+        }
+        save(ReadingView(state: reading, model: model), dir, "reading", size: CGSize(width: 1100, height: 760))
 
         // Onboarding pages.
         let ob = OnboardingState()

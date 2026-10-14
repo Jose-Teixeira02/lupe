@@ -15,6 +15,7 @@ struct TodayView: View {
                     metToday.frame(maxWidth: .infinity, alignment: .topLeading)
                     VStack(spacing: 16) {
                         if let w = model.wordOfTheDay { wordOfTheDay(w) }
+                        readCard
                         tipCard
                     }
                     .frame(width: 280)
@@ -36,7 +37,7 @@ struct TodayView: View {
         let due = model.bank.dueCount(newLimit: model.settings.dailyNewCards)
         if model.bank.cards.isEmpty { return "Your deck is empty. Hold ⌃ on any word to start it." }
         if due == 0 { return "Nothing due. A perfect day to explore." }
-        return "\(due) cards are waiting for you."
+        return due == 1 ? "1 card is waiting for you." : "\(due) cards are waiting for you."
     }
 
     private var statsRow: some View {
@@ -67,7 +68,7 @@ struct TodayView: View {
                 statCard(tint: due > 0 ? Theme.accent : nil) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Due now").font(.system(size: 11)).foregroundStyle(due > 0 ? Color.white.opacity(0.85) : .secondary)
-                        Text("\(due) cards").font(.system(size: 18, weight: .bold, design: .rounded))
+                        Text(due == 1 ? "1 card" : "\(due) cards").font(.system(size: 18, weight: .bold, design: .rounded))
                         Text(due > 0 ? "Start review →" : "All caught up").font(.system(size: 11))
                             .foregroundStyle(due > 0 ? Color.white.opacity(0.85) : .secondary)
                     }
@@ -154,6 +155,25 @@ struct TodayView: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(RoundedRectangle(cornerRadius: 14).fill(Theme.color(for: e.pos, gender: e.gender).opacity(0.08)))
+    }
+
+    private var readCard: some View {
+        Button { openSection(.read) } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "book.fill").font(.system(size: 22)).foregroundStyle(Theme.accent)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Read a short story").font(.system(size: 13, weight: .semibold))
+                    Text("Click any word for its meaning in context").font(.system(size: 11)).foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right").font(.system(size: 11, weight: .semibold)).foregroundStyle(.tertiary)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(RoundedRectangle(cornerRadius: 14).fill(Theme.accent.opacity(0.08)))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private var tipCard: some View {

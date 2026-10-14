@@ -170,6 +170,25 @@ func run() async {
     let tsv = DeckExporter.ankiTSV(bank2.cards)
     check(tsv.contains("der Tisch\ttable\tmesa") && tsv.hasPrefix("#separator:tab"), "Anki export format")
 
+    // MARK: Reading room
+    section("Reading room")
+    let stories = Story.load(language: "de")
+    check(stories.count >= 5 && stories.allSatisfy { !$0.title.isEmpty && !$0.level.isEmpty }, "stories load with titles and levels (\(stories.count))")
+    let readEngine = LookupEngine(lexicon: lexicon, translator: FakeTranslator(table: [:]))
+    if let s = stories.first {
+        let doc = ReadingDocument.parse(s.text, engine: readEngine)
+        let tokens = doc.flatMap(\.tokens)
+        check(doc.count >= 3 && tokens.count > 50, "story parses into paragraphs and words")
+        let rebuilt = doc.map { p in p.leading + p.tokens.map { $0.text + $0.trailing }.joined() }
+        check(rebuilt == doc.map(\.text), "tokens + trailing text rebuild each paragraph exactly")
+        let tagged = tokens.filter { $0.entry != nil }.count
+        check(Double(tagged) / Double(max(tokens.count, 1)) > 0.6, "most words of an A1 story are in the pack (\(tagged)/\(tokens.count))")
+        if let t = tokens.first(where: { $0.text == "Straßenbahn" }), let p = doc.first(where: { $0.id == t.paragraph }),
+           let (sentence, r) = ReadingDocument.sentence(around: t.range, in: p.text) {
+            check(String(sentence[r]) == "Straßenbahn" && sentence.hasPrefix("Die Straßenbahn"), "word → its sentence and range")
+        }
+    }
+
     // MARK: Tutor helpers
     section("Word diff")
     check(WordDiff.changes("Ich habe gestern nach Berlin gefahren.", "Ich bin gestern nach Berlin gefahren.").map { "\($0.from)>\($0.to)" } == ["habe>bin"], "diff finds habe → bin")
