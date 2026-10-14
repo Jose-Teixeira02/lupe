@@ -51,6 +51,8 @@ public final class Lexicon: @unchecked Sendable {
     private var reverse: [String: [String: [Int]]] = [:]
     /// Longest gloss (in words) per helper language, so lookups know how many n-grams to try.
     public private(set) var maxGlossWords: [String: Int] = [:]
+    /// Phrases (pos `phr`) with their words as matching keys (lemmas; "sich" → any reflexive pronoun).
+    public private(set) var phrasePatterns: [(entry: LexEntry, pattern: [String])] = []
 
     public init(info: PackInfo, entries: [LexEntry]) {
         self.info = info
@@ -120,6 +122,7 @@ public final class Lexicon: @unchecked Sendable {
     // MARK: Indexes
 
     private func buildIndexes() {
+        defer { buildPhrasePatterns() }
         let noise = Set(info.separablePrefixes).union(["ist", "hat", "sich", "(sich)", "am", "zu", "es", "-"])
         for (i, e) in entries.enumerated() {
             forward[Self.fold(e.lemma), default: []].append(i)
@@ -135,6 +138,17 @@ public final class Lexicon: @unchecked Sendable {
                     }
                 }
             }
+        }
+    }
+
+    private func buildPhrasePatterns() {
+        phrasePatterns = entries.filter { $0.pos == .phrase }.map { e in
+            var keys: [String] = []
+            for t in TextTools.analyze(e.lemma, language: info.code) {
+                let k = Self.phraseKey(t)
+                if !keys.contains(k) { keys.append(k) }
+            }
+            return (e, keys)
         }
     }
 

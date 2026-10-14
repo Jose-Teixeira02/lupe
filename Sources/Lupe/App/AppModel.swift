@@ -130,9 +130,26 @@ final class AppModel: ObservableObject {
                          app: app, targetForm: targetForm)
     }
 
-    /// Saves a lookup as a card (or adds the new sentence to an existing one).
+    /// Saves a lookup as a card (or adds the new sentence to an existing one). When the word is part of an
+    /// expression in this sentence, the expression is what gets saved.
     @discardableResult
     func save(_ r: LookupResult, source: CardSource, app: String?) -> (card: Card, created: Bool) {
+        if let ex = r.expression {
+            var meanings: [String: String] = [:]
+            if let e = ex.entry, e.pos == .phrase {
+                for h in settings.helpers { if let g = e.glossList(h, limit: 2).nilIfEmpty { meanings[h] = g } }
+            } else if r.direction == .toTarget {
+                meanings[r.sourceLanguage] = ex.source
+            } else {
+                meanings[settings.primaryHelper] = ex.meaning
+            }
+            let entry = ex.entry?.pos == .phrase ? ex.entry : (ex.entry?.pos == .verb && ex.german == ex.entry?.lemma ? ex.entry : nil)
+            let encounter = Encounter(sentence: r.context, translation: r.contextTranslation, language: r.sourceLanguage, app: app,
+                                      targetForm: r.direction == .toTarget ? r.aligned : r.word)
+            return bank.add(term: ex.german, entry: entry, display: entry.map { lexicon.display($0) } ?? ex.german,
+                            meanings: meanings, encounter: encounter, source: source,
+                            kind: entry?.pos == .verb ? .word : .phrase)
+        }
         var meanings = r.meanings
         // Meanings shown on cards should be short.
         for (k, v) in meanings { meanings[k] = v.split(separator: ",").prefix(2).joined(separator: ",") }
@@ -217,4 +234,8 @@ final class AppModel: ObservableObject {
         let hello = hour < 11 ? "Guten Morgen" : hour < 18 ? "Guten Tag" : "Guten Abend"
         return name.isEmpty ? hello : "\(hello), \(name)"
     }
+}
+
+private extension String {
+    var nilIfEmpty: String? { isEmpty ? nil : self }
 }

@@ -27,6 +27,10 @@ public struct LookupResult: Sendable, Identifiable {
     public var confirmedByContext: Bool = false
     /// For compounds: the part that decides gender ("Ufer" in "Flussufer").
     public var compoundHead: LexEntry?
+    /// The expression the word belongs to in this sentence ("Daumen drücken", "running late → zu spät").
+    public var expression: ContextExpression?
+    /// German word on screen: the meaning the translator used in this sentence ("bench" for "Bank").
+    public var senseHere: String?
 
     /// Key used for the word bank.
     public var cardKey: String { entry?.id ?? Card.key(for: headword) }
@@ -34,7 +38,7 @@ public struct LookupResult: Sendable, Identifiable {
     public var term: String { entry?.lemma ?? headword }
 
     /// Whether this lookup is reliable enough to auto-save as a card.
-    public var isConfident: Bool { confirmedByContext || contextTranslation == nil }
+    public var isConfident: Bool { confirmedByContext || expression != nil || contextTranslation == nil }
 }
 
 /// A German word inside a translated phrase, for the Ask bar's breakdown row.
@@ -131,15 +135,32 @@ public final class LookupEngine: @unchecked Sendable {
             head = c.head
         }
 
+        // Idioms and verb patterns from the pack ("Ich drücke dir die Daumen" → "Daumen drücken").
+        var expression: ContextExpression?
+        if let token, let phrase = lexicon.expressions(in: tokens, around: token).first {
+            expression = ContextExpression(source: phrase.lemma, german: phrase.lemma,
+                                    meaning: phrase.glossList(primaryHelper, limit: 2), entry: phrase, origin: .pack)
+        }
+
         // Sentence translation with the hovered word aligned ("rufe … an" → "will call").
         var translation: AlignedTranslation?
         if !context.isEmpty && context != word, let highlight = token?.range ?? text.range(of: word) {
             translation = try? await translator.translateAligned(text, highlight: highlight, from: target, to: primaryHelper)
         }
 
+        // The sense used here picks the homograph and orders the meanings ("Bank" → bench, not bank).
+        var senseHere: String?
+        var senseIndex: Int?
+        if let aligned = translation?.aligned, !aligned.isEmpty, let e = entry {
+            senseHere = aligned
+            let (best, index) = homograph(for: e, word: word, lemma: token?.lemma, aligned: aligned)
+            entry = best
+            senseIndex = index
+        }
+
         var meanings: [String: String] = [:]
         if let entry, !(entry.glosses[primaryHelper] ?? []).isEmpty {
-            for h in helpers { if let g = entry.glossList(h, limit: 3).nilIfEmpty { meanings[h] = g } }
+            meanings = self.meanings(for: entry, senseFirst: senseIndex)
         } else {
             // Not in the pack (or a compound): translate the lemma into every helper language.
             let source = entry?.lemma ?? token?.lemma ?? word
@@ -154,7 +175,8 @@ public final class LookupEngine: @unchecked Sendable {
         return LookupResult(word: word, context: context, sourceLanguage: target, targetLanguage: primaryHelper,
                             direction: .fromTarget, entry: entry, headword: headword, meanings: meanings,
                             contextTranslation: translation?.text, aligned: translation?.aligned,
-                            alignedRange: translation?.alignedRange, confirmedByContext: true, compoundHead: head)
+                            alignedRange: translation?.alignedRange, confirmedByContext: true, compoundHead: head,
+                            expression: expression, senseHere: senseHere)
     }
 
     /// English/Portuguese word on screen → German headword, using alignment and the lexicon.
@@ -175,11 +197,26 @@ public final class LookupEngine: @unchecked Sendable {
         var aligned = translation?.aligned
         var alignedRange = translation?.alignedRange
         var confirmed = false
+        var expression: ContextExpression?
+        if let token { expression = packExpression(token: token, tokens: tokens, text: text, language: language) }
+
+        // 0. Phrasal verbs ("gave up", "look after"): align the verb together with its particle.
+        if expression == nil, let token, token.wordClass == .verb, let i = tokens.firstIndex(of: token), i + 1 < tokens.count,
+           Self.englishParticles.contains(tokens[i + 1].text.lowercased()), language == "en",
+           let span = await spanExpression(token: token, tokens: tokens, text: text, language: language, preferNext: true) {
+            expression = span
+            if let e = span.entry { chosen = e; confirmed = true }
+        }
 
         // 1. The aligned German words (best signal: it's what the translator actually used).
-        if let ar = translation?.alignedRange {
+        let englishIsAuxiliary = ["have", "be", "will", "get", "go"].contains(token?.lemma.lowercased() ?? "")
+        if chosen == nil, let ar = translation?.alignedRange {
             let span = germanTokens.filter { $0.range.overlaps(ar) }
-            let content = span.filter { !Stopwords.de.contains(Lexicon.fold($0.text)) }
+            // "hat" in "hat … aufgehört" is just the tense auxiliary unless the English word was one too.
+            let content = span.filter {
+                !Stopwords.de.contains(Lexicon.fold($0.text))
+                    && (englishIsAuxiliary || !Self.auxiliaries.contains(Lexicon.fold($0.lemma)))
+            }
             for t in content {
                 if let e = candidates.first(where: { Self.matches($0, token: t, lexicon: lexicon) }) {
                     chosen = e; confirmed = true; break
@@ -214,7 +251,14 @@ public final class LookupEngine: @unchecked Sendable {
             alignedRange = translation?.text.range(of: form)
         }
 
-        // 3. Nothing confirmed: fall back to the lexicon's first sense (flagged as unconfirmed).
+        // 3. Still nothing: the word may be part of an expression ("running late" → "zu spät").
+        if chosen == nil, expression == nil, translation != nil, let token,
+           let span = await spanExpression(token: token, tokens: tokens, text: text, language: language, preferNext: false) {
+            expression = span
+            if let e = span.entry { chosen = e; confirmed = true }
+        }
+
+        // 4. Nothing confirmed: fall back to the lexicon's first sense (flagged as unconfirmed).
         if chosen == nil, let first = candidates.first {
             chosen = first
             confirmed = translation == nil
@@ -251,18 +295,30 @@ public final class LookupEngine: @unchecked Sendable {
         }
         meanings[language] = meanings[language] ?? (token?.lemma ?? word)
 
+        // Highlight what the expression became in the translation ("aufgehört", "zu spät") instead of an auxiliary.
+        if let form = expression?.targetForm, let t = translation?.text, let r = t.range(of: form) {
+            aligned = form
+            alignedRange = r
+        }
+
+        // An expression found by alignment that is just the chosen verb adds nothing.
+        if let ex = expression, ex.origin == .alignment, let e = ex.entry, e.id == chosen?.id, ex.german == e.lemma,
+           ex.source.split(separator: " ").count < 2 {
+            expression = nil
+        }
+
         return LookupResult(word: word, context: context, sourceLanguage: language, targetLanguage: target,
                             direction: .toTarget, entry: chosen, headword: headword, meanings: meanings,
                             contextTranslation: translation?.text, aligned: aligned, alignedRange: alignedRange,
-                            confirmedByContext: confirmed, compoundHead: head)
+                            confirmedByContext: confirmed, compoundHead: head, expression: expression)
     }
 
     /// Machine translations of single words come back capitalised ("Porta da frente"); glosses read better lowercased.
     static func wordGloss(_ t: String) -> String {
         let trimmed = TextTools.clean(t)
         guard let first = trimmed.first, first.isUppercase else { return trimmed }
-        // Single words may be proper nouns ("Berlin"); only phrases are safe to lowercase.
-        if trimmed.split(separator: " ").count == 1 { return trimmed }
+        // Keep names ("Berlin"), lowercase ordinary words ("Polegar" → "polegar").
+        if TextTools.isName(trimmed) { return trimmed }
         return first.lowercased() + trimmed.dropFirst()
     }
 

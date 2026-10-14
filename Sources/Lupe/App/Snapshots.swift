@@ -24,9 +24,15 @@ enum Snapshots {
         let germanCard = wait { await model.engine.lookup(word: "rufe", context: "Ich rufe dich morgen früh an.") }
         let riverCard = wait { await model.engine.lookup(word: "bank", context: "We had a picnic on the river bank.") }
         let compound = wait { await model.engine.lookup(word: "Haustür", context: "Kannst du bitte die Haustür abschließen?") }
+        let lateCard = wait { await model.engine.lookup(word: "running", context: "Sorry, I'm running late for the meeting.") }
+        let thumbsCard = wait { await model.engine.lookup(word: "Daumen", context: "Ich drücke dir morgen die Daumen!") }
+        let lockCard = wait { await model.engine.lookup(word: "Schloss", context: "Das Schloss an der Tür ist kaputt.") }
+        let gaveCard = wait { await model.engine.lookup(word: "gave", context: "She gave up smoking last year.") }
         for (name, r, saved) in [("card-en-books", englishCard, true), ("card-en-light", lightCard, false),
                                  ("card-de-anrufen", germanCard, true), ("card-en-riverbank", riverCard, false),
-                                 ("card-de-compound", compound, true)] {
+                                 ("card-de-compound", compound, true), ("card-en-runninglate", lateCard, true),
+                                 ("card-de-daumen", thumbsCard, true), ("card-de-schloss", lockCard, true),
+                                 ("card-en-gaveup", gaveCard, true)] {
             let s = LookupCardState()
             s.reset(.ready(r))
             if saved { s.saved = .saved(UUID(), created: true) }

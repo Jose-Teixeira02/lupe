@@ -94,6 +94,18 @@ public enum TextTools {
         return tokenizer.tokens(for: text.startIndex..<text.endIndex)
     }
 
+    /// Whether `text` looks like a person, place or organisation name.
+    public static func isName(_ text: String) -> Bool {
+        let tagger = NLTagger(tagSchemes: [.nameType])
+        tagger.string = text
+        var found = false
+        tagger.enumerateTags(in: text.startIndex..<text.endIndex, unit: .word, scheme: .nameType, options: [.omitWhitespace, .omitPunctuation, .joinNames]) { tag, _ in
+            if tag == .personalName || tag == .placeName || tag == .organizationName { found = true }
+            return !found
+        }
+        return found
+    }
+
     /// Strips leading/trailing punctuation and quotes.
     public static func clean(_ word: String) -> String {
         word.trimmingCharacters(in: CharacterSet.punctuationCharacters.union(.whitespacesAndNewlines).union(.symbols))

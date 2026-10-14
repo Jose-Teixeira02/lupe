@@ -84,7 +84,14 @@ if security find-identity -v -p codesigning 2>/dev/null | grep -q "Lupe Dev"; th
   IDENTITY="Lupe Dev"
 fi
 echo "▸ Signing ($([[ $IDENTITY == - ]] && echo ad hoc || echo $IDENTITY))…"
-codesign --force --deep --sign "$IDENTITY" --identifier local.lupe.Lupe "$APP"
+if [[ $IDENTITY == "-" ]]; then
+  # Ad-hoc signatures normally pin permissions to this exact build (its cdhash). A designated
+  # requirement on the bundle identifier lets Screen Recording / Accessibility grants survive rebuilds.
+  codesign --force --deep --sign - --identifier local.lupe.Lupe \
+    --requirements '=designated => identifier "local.lupe.Lupe"' "$APP"
+else
+  codesign --force --deep --sign "$IDENTITY" --identifier local.lupe.Lupe "$APP"
+fi
 echo "✓ Built $APP"
 
 if [[ $INSTALL == 1 ]]; then

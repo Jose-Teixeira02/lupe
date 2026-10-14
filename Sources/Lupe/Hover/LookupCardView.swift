@@ -98,10 +98,31 @@ struct LookupCardView: View {
     @ViewBuilder
     private func ready(_ r: LookupResult) -> some View {
         let entry = r.entry
+        // When the word only makes sense as part of an expression, the expression leads and the word steps back.
+        let wordIsSecondary = r.expression != nil && !r.confirmedByContext
         VStack(alignment: .leading, spacing: 10) {
+            if let ex = r.expression {
+                if ex.german == r.entry?.lemma {
+                    // "gave up" → aufhören: the expression *is* the headword; just say which words it covers.
+                    HStack(spacing: 5) {
+                        Text("IN THIS SENTENCE").font(.system(size: 9, weight: .bold)).tracking(0.8).foregroundStyle(Theme.accent)
+                        Text("\(Theme.flag(r.sourceLanguage)) \(ex.source)").font(.system(size: 12, weight: .medium)).foregroundStyle(.secondary)
+                    }
+                } else {
+                    expressionBox(ex, r)
+                }
+            }
+            if wordIsSecondary, let entry {
+                HStack(spacing: 6) {
+                    Text("On its own:").font(.system(size: 11)).foregroundStyle(.tertiary)
+                    GenderedWord(display: r.headword, gender: entry.gender, pos: entry.pos, size: 13, weight: .medium)
+                    Text("· \(entry.gloss(helpers.first ?? "en") ?? "")").font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
+                }
+            } else {
             // Headword
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                GenderedWord(display: r.headword, gender: entry?.gender, pos: entry?.pos, size: 24)
+                GenderedWord(display: r.headword, gender: entry?.gender, pos: entry?.pos,
+                             size: r.expression == nil || r.expression?.german == entry?.lemma ? 24 : 19)
                 Spacer(minLength: 4)
                 Button { actions.speak(entry?.lemma ?? r.term) } label: {
                     Image(systemName: "speaker.wave.2.fill").font(.system(size: 13))
@@ -127,6 +148,14 @@ struct LookupCardView: View {
                         .font(.system(size: 11)).foregroundStyle(.secondary)
                 }
             }
+            if r.direction == .fromTarget, r.expression == nil, let here = r.senseHere {
+                HStack(spacing: 5) {
+                    Text("here").font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
+                        .padding(.horizontal, 5).padding(.vertical, 1)
+                        .background(Capsule().fill(Theme.accent))
+                    Text(here).font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.accent)
+                }
+            }
             // Meanings
             VStack(alignment: .leading, spacing: 3) {
                 ForEach(helpers, id: \.self) { h in
@@ -143,6 +172,7 @@ struct LookupCardView: View {
                     .font(.system(size: 11)).foregroundStyle(Theme.warm)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            } // end of single-word block
             // Context
             if !r.context.isEmpty && r.context != r.word {
                 Divider().opacity(0.5)
@@ -174,6 +204,37 @@ struct LookupCardView: View {
             footer(r)
         }
         .padding(14)
+    }
+
+    /// "In this sentence: zu spät · running late" or an idiom from the pack.
+    private func expressionBox(_ ex: ContextExpression, _ r: LookupResult) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(ex.origin == .pack ? "EXPRESSION" : "IN THIS SENTENCE")
+                    .font(.system(size: 9, weight: .bold)).tracking(0.8).foregroundStyle(Theme.accent)
+                Spacer()
+                Button { actions.speak(ex.german) } label: { Image(systemName: "speaker.wave.2.fill").font(.system(size: 12)) }
+                    .buttonStyle(.borderless)
+            }
+            Text(ex.german)
+                .font(.system(size: 20, weight: .semibold, design: .rounded))
+                .fixedSize(horizontal: false, vertical: true)
+            if r.direction == .toTarget {
+                HStack(spacing: 5) {
+                    Text(Theme.flag(r.sourceLanguage)).font(.system(size: 11))
+                    Text(ex.source).font(.system(size: 13)).foregroundStyle(.secondary)
+                }
+            }
+            if !ex.meaning.isEmpty && (r.direction == .fromTarget || ex.origin == .pack) && ex.meaning != ex.source {
+                HStack(spacing: 5) {
+                    Text(Theme.flag(helpers.first ?? "en")).font(.system(size: 11))
+                    Text(ex.meaning).font(.system(size: 13)).foregroundStyle(.primary.opacity(0.85))
+                }
+            }
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Theme.accent.opacity(0.08)))
     }
 
     private func footer(_ r: LookupResult) -> some View {
