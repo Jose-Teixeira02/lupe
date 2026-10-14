@@ -228,6 +228,11 @@ func run() async {
     check(lexicon.bestEntry(forGerman: "Kannst", lemma: "koennen")?.lemma == "können", "umlaut restoration: koennen → können")
     let bd2 = engine.breakdown(of: "Kannst du dich dieses Wochenende um meine Katze kümmern?")
     check(bd2.contains { $0.display == "sich kümmern um" } && !bd2.contains { $0.display == "um" }, "breakdown groups sich kümmern um (got \(bd2.map(\.display)))")
+    let bankSenses = engine.senses(ofHelper: "bank", language: "en", translation: "Bank")
+    check(Set(bankSenses.map(\.surface)).isSuperset(of: ["Bank", "Ufer"]), "a lone 'bank' lists Bank and Ufer (got \(bankSenses.map(\.display)))")
+    let schlossSenses = engine.senses(ofGerman: "Schloss")
+    check(schlossSenses.compactMap(\.meaning).contains("lock") && schlossSenses.compactMap(\.meaning).contains("castle"), "Schloss lists lock and castle")
+    check(engine.senses(ofHelper: "I would like a coffee please", language: "en", translation: "").isEmpty, "sentences get no sense list")
     let bd = engine.breakdown(of: "Ich lege die Bücher auf den Tisch.")
     check(bd.contains { $0.entry?.lemma == "Buch" } && bd.contains { $0.display == "der Tisch" }, "phrase breakdown finds nouns with articles")
 

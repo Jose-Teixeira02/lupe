@@ -106,7 +106,8 @@ struct AskView: View {
                     iconButton("plus.circle", help: "Save phrase (⌘S)") { actions.save() }
                         .keyboardShortcut("s", modifiers: .command)
                 }
-                breakdown(r.breakdown)
+                if !(isSingleWord(r) && !r.senses.isEmpty) { breakdown(r.breakdown) }
+                sensesRow(r)
             } else {
                 // German → meaning (+ grammar check)
                 VStack(alignment: .leading, spacing: 4) {
@@ -126,8 +127,9 @@ struct AskView: View {
                         }
                     }
                 }
-                checkSection(r)
-                breakdown(r.breakdown)
+                if !isSingleWord(r) { checkSection(r) }
+                sensesRow(r)
+                if !(isSingleWord(r) && !r.senses.isEmpty) { breakdown(r.breakdown) }
             }
             if let toast = state.toast {
                 Label(toast, systemImage: "checkmark.circle.fill").font(.system(size: 11, weight: .medium)).foregroundStyle(Theme.success)
@@ -177,6 +179,32 @@ struct AskView: View {
             Button { actions.check() } label: { Label("Check my German", systemImage: "checkmark.bubble") }
                 .buttonStyle(.borderless).font(.system(size: 12))
                 .keyboardShortcut("k", modifiers: .command)
+        }
+    }
+
+    private func isSingleWord(_ r: PhraseResult) -> Bool { !r.input.contains(" ") }
+
+    /// "Depending on context: die Bank (money) · das Ufer (river)".
+    @ViewBuilder
+    private func sensesRow(_ r: PhraseResult) -> some View {
+        if !r.senses.isEmpty {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(r.inputLanguage == model.target ? "THIS WORD CAN MEAN" : "DEPENDING ON CONTEXT")
+                    .font(.system(size: 9, weight: .bold)).tracking(0.8).foregroundStyle(.secondary)
+                FlowLayout(spacing: 6, lineSpacing: 6) {
+                    ForEach(r.senses) { g in
+                        HStack(spacing: 5) {
+                            if r.inputLanguage != model.target {
+                                Text(g.display).font(.system(size: 12, weight: .semibold, design: .rounded))
+                                    .foregroundStyle(Theme.color(for: g.entry?.pos, gender: g.entry?.gender))
+                            }
+                            if let m = g.meaning { Text(m).font(.system(size: 11)).foregroundStyle(r.inputLanguage == model.target ? .primary : .secondary) }
+                        }
+                        .padding(.horizontal, 8).padding(.vertical, 4)
+                        .background(Capsule().strokeBorder(Theme.color(for: g.entry?.pos, gender: g.entry?.gender).opacity(0.35)))
+                    }
+                }
+            }
         }
     }
 

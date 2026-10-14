@@ -60,6 +60,8 @@ public struct PhraseResult: Sendable {
     /// Extra translation into the second helper language, when the input was German.
     public var secondaryOutput: String?
     public var secondaryLanguage: String?
+    /// For a single word typed without context: the other meanings it can have ("bank" → die Bank, das Ufer).
+    public var senses: [WordGloss] = []
 }
 
 /// Turns "the word under the mouse" into a learnable result: the sentence is translated with word
@@ -476,12 +478,48 @@ public final class LookupEngine: @unchecked Sendable {
             let second = helpers.first { $0 != primaryHelper }
             var secondary: String?
             if let second { secondary = try? await translator.translate(text, from: target, to: second) }
-            return PhraseResult(input: text, inputLanguage: target, output: try await main, outputLanguage: primaryHelper,
-                                breakdown: breakdown(of: text), secondaryOutput: secondary, secondaryLanguage: second)
+            let single = !text.contains(" ")
+            var result = PhraseResult(input: text, inputLanguage: target,
+                                      output: single ? Self.wordGloss(try await main) : try await main, outputLanguage: primaryHelper,
+                                      breakdown: breakdown(of: text), secondaryOutput: single ? secondary.map(Self.wordGloss) : secondary,
+                                      secondaryLanguage: second)
+            result.senses = senses(ofGerman: text)
+            return result
         }
         let out = try await translator.translate(text, from: lang, to: target)
-        return PhraseResult(input: text, inputLanguage: lang, output: out, outputLanguage: target,
-                            breakdown: breakdown(of: out), secondaryOutput: nil, secondaryLanguage: nil)
+        var result = PhraseResult(input: text, inputLanguage: lang, output: out, outputLanguage: target,
+                                  breakdown: breakdown(of: out), secondaryOutput: nil, secondaryLanguage: nil)
+        result.senses = senses(ofHelper: text, language: lang, translation: out)
+        return result
+    }
+
+    /// A lone English/Portuguese word or short gloss can mean several German words; list them when they differ.
+    public func senses(ofHelper text: String, language: String, translation: String) -> [WordGloss] {
+        guard text.split(separator: " ").count <= 3 else { return [] }
+        let tokens = TextTools.analyze(text, language: language)
+        guard let token = tokens.first(where: { !Stopwords.set(for: language).contains($0.text.lowercased()) }) ?? tokens.first else { return [] }
+        var entries = candidateEntries(word: token.text, token: token, tokens: tokens, language: language).filter { $0.pos.isContentWord }
+        entries += lexicon.entries(forGloss: text.lowercased(), language: language)
+        var seen = Set<String>()
+        entries = entries.filter { seen.insert(Lexicon.fold($0.lemma)).inserted }
+        guard entries.count > 1 else { return [] }
+        return entries.prefix(5).map { e in
+            // Show which sense each one is: "bank (river)" rather than just "bank".
+            let gloss = (e.glosses[language] ?? []).first { Lexicon.glossKeys($0, language: language, pos: e.pos).contains { $0.contains(token.lemma.lowercased()) || $0.contains(token.text.lowercased()) } }
+                ?? e.gloss(language)
+            return WordGloss(surface: e.lemma, entry: e, display: lexicon.display(e), meaning: gloss)
+        }
+    }
+
+    /// A German word with several meanings or homographs ("Schloss": lock, castle).
+    public func senses(ofGerman text: String) -> [WordGloss] {
+        guard !text.contains(" ") else { return [] }
+        let entries = lexicon.entries(forGerman: text).filter { $0.pos.isContentWord }
+        let total = entries.reduce(0) { $0 + ($1.glosses[primaryHelper]?.count ?? 0) }
+        guard entries.count > 1 || total > 1 else { return [] }
+        return entries.flatMap { e in
+            (e.glosses[primaryHelper] ?? []).prefix(4).map { g in WordGloss(surface: e.lemma + "|" + g, entry: e, display: lexicon.display(e), meaning: g) }
+        }
     }
 
     /// Content words of a German text with their lexicon entries.
