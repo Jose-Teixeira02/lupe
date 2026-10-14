@@ -1,0 +1,10 @@
+{
+  "code": "de",
+  "name": "German",
+  "nativeName": "Deutsch",
+  "flag": "🇩🇪",
+  "articles": { "m": "der", "f": "die", "n": "das", "pl": "die" },
+  "capitalizeNouns": true,
+  "speechLanguage": "de-DE",
+  "separablePrefixes": ["ab", "an", "auf", "aus", "bei", "ein", "fest", "fort", "her", "hin", "herein", "heraus", "hinaus", "hinein", "los", "mit", "nach", "vor", "vorbei", "weg", "weiter", "zu", "zurück", "zusammen", "fern", "statt", "teil", "kennen", "fertig", "statt"]
+}

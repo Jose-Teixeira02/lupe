@@ -1,0 +1,192 @@
+# German core lexicon — function words.
+# Columns: lemma|pos|gender|forms|en|pt|cefr   (glosses separated by ';', primary sense first)
+# Rank = line order across files (01-, 02-, ...), so keep files ordered by frequency.
+der|art|-|der · den · dem · des|the|o; a|A1
+die|art|-|die · der|the|a; as; os|A1
+das|art|-|das · dem · des|the|o|A1
+ein|art|-|ein · eine · einen · einem · einer · eines|a; an; one|um; uma|A1
+und|conj|-||and|e|A1
+sein|v|-|ist · war · ist gewesen|to be|ser; estar|A1
+in|prep|-||in; into|em; dentro de|A1
+nicht|adv|-||not|não|A1
+zu|prep|-||to; too|para; a; demasiado|A1
+haben|v|-|hat · hatte · hat gehabt|to have|ter|A1
+werden|v|-|wird · wurde · ist geworden|to become; will|tornar-se; ficar; vir a|A1
+ich|pron|-|mich · mir|I|eu|A1
+du|pron|-|dich · dir|you (informal)|tu|A1
+er|pron|-|ihn · ihm|he; it|ele|A1
+sie|pron|-|sie · ihr · ihnen|she; they; it|ela; eles; elas|A1
+es|pron|-||it|isso; ele; ela|A1
+wir|pron|-|uns|we|nós|A1
+ihr|pron|-|euch|you (plural)|vós; vocês|A1
+Sie|pron|-|Ihnen|you (formal)|o senhor; a senhora; você|A1
+mit|prep|-||with|com|A1
+von|prep|-||from; of; by|de; por|A1
+auf|prep|-||on; onto; up|em cima de; sobre; em|A1
+für|prep|-||for|para; por|A1
+an|prep|-||at; on; to|em; junto a; a|A1
+auch|adv|-||also; too|também|A1
+dass|conj|-||that|que|A1
+so|adv|-||so; like this|assim; tão|A1
+wie|adv|-||how; like; as|como|A1
+aber|conj|-||but|mas|A1
+oder|conj|-||or|ou|A1
+noch|adv|-||still; yet; another|ainda; mais|A1
+aus|prep|-||out of; from|de; fora de|A1
+bei|prep|-||at; near; with|em casa de; junto a; perto de|A1
+nach|prep|-||after; to; according to|depois de; para; segundo|A1
+man|pron|-|einen · einem|one; people; you|se; a gente|A1
+um|prep|-||around; at (time)|à volta de; às|A1
+wenn|conj|-||if; when; whenever|se; quando|A1
+nur|adv|-||only; just|só; apenas|A1
+schon|adv|-||already|já|A1
+als|conj|-||when; as; than|quando; como; do que|A1
+kein|art|-|keine · keinen · keinem · keiner|no; not a|nenhum; nenhuma|A1
+mein|pron|-|meine · meinen · meinem · meiner|my|meu; minha|A1
+dein|pron|-|deine · deinen · deinem · deiner|your (informal)|teu; tua|A1
+sein|pron|-|seine · seinen · seinem · seiner|his; its|seu; dele|A1
+unser|pron|-|unsere · unseren · unserem · unserer|our|nosso; nossa|A1
+euer|pron|-|eure · euren · eurem · eurer|your (plural)|vosso; vossa|A1
+dies|pron|-|dieser · diese · dieses · diesen · diesem|this|este; esta; isto|A1
+jener|pron|-|jene · jenes · jenen · jenem|that (one)|aquele; aquela|B1
+was|pron|-||what|o que; que|A1
+wer|pron|-|wen · wem · wessen|who|quem|A1
+wo|adv|-||where|onde|A1
+wohin|adv|-||where to|para onde|A1
+woher|adv|-||where from|de onde|A1
+wann|adv|-||when|quando|A1
+warum|adv|-||why|porque; porquê|A1
+welcher|pron|-|welche · welches · welchen · welchem|which|qual|A1
+ob|conj|-||whether; if|se|A2
+weil|conj|-||because|porque|A1
+denn|conj|-||because; then (particle)|pois; porque|A1
+sondern|conj|-||but rather|mas sim|A2
+obwohl|conj|-||although|embora|B1
+damit|conj|-||so that|para que|B1
+bevor|conj|-||before|antes de|A2
+nachdem|conj|-||after|depois de|B1
+während|prep|-||during; while|durante; enquanto|A2
+seit|prep|-||since; for (time)|desde; há|A2
+bis|prep|-||until; by|até|A1
+ohne|prep|-||without|sem|A2
+gegen|prep|-||against; around (time)|contra; por volta de|A2
+durch|prep|-||through|através de; por|A2
+über|prep|-||over; above; about|sobre; por cima de; acerca de|A1
+unter|prep|-||under; below; among|debaixo de; sob; entre|A2
+vor|prep|-||in front of; before; ago|à frente de; antes de; há|A1
+hinter|prep|-||behind|atrás de|A2
+neben|prep|-||next to; beside|ao lado de|A2
+zwischen|prep|-||between|entre|A2
+wegen|prep|-||because of|por causa de|B1
+trotz|prep|-||despite|apesar de|B1
+statt|prep|-||instead of|em vez de|B1
+außer|prep|-||except; besides|exceto; além de|B1
+gegenüber|prep|-||opposite|em frente de|A2
+entlang|prep|-||along|ao longo de|B1
+ja|part|-||yes|sim|A1
+nein|part|-||no|não|A1
+doch|part|-||yes (contradicting); after all; but|sim; afinal; mas|A2
+mal|part|-||just; once; times|lá; uma vez; vezes|A2
+eigentlich|adv|-||actually|na verdade|A2
+etwa|adv|-||about; approximately|cerca de|B1
+etwas|pron|-||something; somewhat|algo; alguma coisa|A1
+nichts|pron|-||nothing|nada|A1
+alles|pron|-||everything|tudo|A1
+alle|pron|-||all; everyone|todos; todas|A1
+jeder|pron|-|jede · jedes · jeden · jedem|every; each|cada; todos|A1
+viel|adj|-|mehr · am meisten|much; a lot|muito|A1
+viele|pron|-||many|muitos; muitas|A1
+wenig|adj|-|weniger · am wenigsten|little; few|pouco|A2
+einige|pron|-||some; a few|alguns; algumas|A2
+manche|pron|-||some; many a|alguns; algumas|B1
+beide|pron|-||both|ambos; os dois|A2
+andere|adj|-||other|outro; outra|A1
+selbst|pron|-||self; even|próprio; mesmo|B1
+sich|pron|-||oneself; himself; herself; themselves|se; si|A1
+jemand|pron|-||someone; somebody|alguém|A2
+niemand|pron|-||nobody|ninguém|A2
+hier|adv|-||here|aqui|A1
+da|adv|-||there; since|aí; ali; já que|A1
+dort|adv|-||there|lá; ali|A1
+jetzt|adv|-||now|agora|A1
+dann|adv|-||then|então; depois|A1
+heute|adv|-||today|hoje|A1
+morgen|adv|-||tomorrow|amanhã|A1
+gestern|adv|-||yesterday|ontem|A1
+immer|adv|-||always|sempre|A1
+nie|adv|-||never|nunca|A1
+oft|adv|-|öfter · am häufigsten|often|frequentemente; muitas vezes|A1
+manchmal|adv|-||sometimes|às vezes|A1
+sehr|adv|-||very|muito|A1
+ganz|adv|-||quite; whole; completely|bastante; todo; completamente|A1
+zusammen|adv|-||together|juntos|A1
+wieder|adv|-||again|outra vez; de novo|A1
+gern|adv|-|lieber · am liebsten|gladly; like to|com gosto; de bom grado|A1
+vielleicht|adv|-||maybe; perhaps|talvez|A1
+natürlich|adv|-||of course; naturally|claro; naturalmente|A1
+also|adv|-||so; therefore|então; portanto|A1
+genau|adv|-||exactly; precisely|exatamente|A1
+leider|adv|-||unfortunately|infelizmente|A1
+bitte|part|-||please; you're welcome|por favor; de nada|A1
+danke|intj|-||thank you; thanks|obrigado; obrigada|A1
+hallo|intj|-||hello; hi|olá|A1
+tschüss|intj|-||bye|adeus; tchau|A1
+gleich|adv|-||right away; equal; same|já; igual|A2
+bald|adv|-||soon|em breve; logo|A1
+sofort|adv|-||immediately|imediatamente|A2
+schnell|adj|-|schneller · am schnellsten|fast; quick|rápido|A1
+fast|adv|-||almost|quase|A2
+kaum|adv|-||hardly; barely|mal; quase não|B1
+sogar|adv|-||even|até; mesmo|B1
+besonders|adv|-||especially; particularly|especialmente|A2
+ziemlich|adv|-||rather; quite|bastante|A2
+zu|adv|-||too (much); closed|demasiado; fechado|A1
+weiter|adv|-||further; on|mais adiante; continuar|A2
+zurück|adv|-||back|de volta|A2
+vorher|adv|-||before; beforehand|antes|A2
+nachher|adv|-||afterwards; later|depois|A2
+später|adv|-||later|mais tarde|A1
+früher|adv|-||earlier; formerly|antes; mais cedo|A2
+damals|adv|-||back then|naquela altura|B1
+inzwischen|adv|-||meanwhile; by now|entretanto|B1
+endlich|adv|-||finally; at last|finalmente; até que enfim|A2
+zuerst|adv|-||first; at first|primeiro|A2
+schließlich|adv|-||finally; after all|finalmente; afinal|B1
+trotzdem|adv|-||nevertheless; anyway|mesmo assim|B1
+deshalb|adv|-||therefore; that's why|por isso|A2
+außerdem|adv|-||besides; furthermore|além disso|B1
+überall|adv|-||everywhere|em todo o lado|A2
+irgendwo|adv|-||somewhere|algures; em algum lado|B1
+draußen|adv|-||outside|lá fora|A2
+drinnen|adv|-||inside|lá dentro|A2
+oben|adv|-||above; upstairs|em cima|A2
+unten|adv|-||below; downstairs|em baixo|A2
+links|adv|-||left|à esquerda|A1
+rechts|adv|-||right|à direita|A1
+geradeaus|adv|-||straight ahead|sempre em frente|A1
+eins|num|-||one|um|A1
+zwei|num|-||two|dois|A1
+drei|num|-||three|três|A1
+vier|num|-||four|quatro|A1
+fünf|num|-||five|cinco|A1
+sechs|num|-||six|seis|A1
+sieben|num|-||seven|sete|A1
+acht|num|-||eight|oito|A1
+neun|num|-||nine|nove|A1
+zehn|num|-||ten|dez|A1
+elf|num|-||eleven|onze|A1
+zwölf|num|-||twelve|doze|A1
+zwanzig|num|-||twenty|vinte|A1
+hundert|num|-||hundred|cem|A1
+tausend|num|-||thousand|mil|A1
+erste|adj|-||first|primeiro|A1
+zweite|adj|-||second|segundo|A1
+dritte|adj|-||third|terceiro|A1
+halb|adj|-||half|meio|A1
+können|v|-|kann · konnte · hat gekonnt|can; to be able to|poder; conseguir; saber|A1
+müssen|v|-|muss · musste · hat gemusst|must; to have to|ter de; dever|A1
+wollen|v|-|will · wollte · hat gewollt|to want|querer|A1
+sollen|v|-|soll · sollte · hat gesollt|should; to be supposed to|dever|A1
+dürfen|v|-|darf · durfte · hat gedurft|may; to be allowed to|poder (ter permissão)|A1
+mögen|v|-|mag · mochte · hat gemocht|to like|gostar de|A1
+möchten|v|-|möchte · wollte · hat gewollt|would like|gostaria; queria|A1
