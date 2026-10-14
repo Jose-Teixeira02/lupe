@@ -191,6 +191,7 @@ struct LookupCardView: View {
                     }
                 }
             }
+            if !r.confusables.isEmpty { confusablesBox(r.confusables) }
             if state.explaining {
                 HStack(spacing: 6) { ProgressView().controlSize(.mini); Text("Thinking…").font(.system(size: 11)).foregroundStyle(.secondary) }
             } else if let e = state.explanation {
@@ -204,6 +205,31 @@ struct LookupCardView: View {
             footer(r)
         }
         .padding(14)
+    }
+
+    /// "Don't mix up": the word on the card next to the words learners confuse it with.
+    private func confusablesBox(_ items: [Confusable]) -> some View {
+        VStack(alignment: .leading, spacing: 7) {
+            Label(items.contains { $0.curated } ? "DON'T MIX UP" : "SIMILAR MEANING", systemImage: "arrow.left.arrow.right")
+                .font(.system(size: 9, weight: .bold)).tracking(0.6).foregroundStyle(Theme.warm)
+            ForEach(items) { c in
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    GenderedWord(display: c.display, gender: c.entry?.gender, pos: c.entry?.pos, size: 13,
+                                 weight: c.isCurrent ? .bold : .semibold)
+                        .frame(minWidth: 64, alignment: .leading)
+                        .fixedSize()
+                    Text(c.note).font(.system(size: 11)).foregroundStyle(c.isCurrent ? .primary : .secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .opacity(c.isCurrent ? 1 : 0.92)
+                .contentShape(Rectangle())
+                .onTapGesture { actions.speak(c.entry?.lemma ?? c.display) }
+                .help("Click to hear it")
+            }
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Theme.warm.opacity(0.07)))
     }
 
     /// "In this sentence: zu spät · running late" or an idiom from the pack.

@@ -1,0 +1,46 @@
+# Words learners mix up. Shown as "Don't mix up" on the word card.
+# Format: words (comma-separated; "der See" pins a gender) | English notes | Portuguese notes
+# Notes: "word: when to use it" segments separated by " ; ".
+
+schön, nett, hübsch | schön: beautiful, lovely, nice to look at or to experience — things, places, days ("ein schöner Tag") ; nett: nice as in kind, friendly — mostly people ("ein netter Kollege") ; hübsch: pretty, cute — about looks ("ein hübsches Kleid") | schön: bonito, agradável — coisas, lugares, dias ("ein schöner Tag") ; nett: simpático, amável — sobretudo pessoas ("ein netter Kollege") ; hübsch: giro, bonito — aparência ("ein hübsches Kleid")
+nett, freundlich, lieb | nett: kind, pleasant — everyday "nice" for people ; freundlich: friendly, polite — manner, service ("freundliche Bedienung") ; lieb: sweet, dear, affectionate — warmer, for people you like ("Liebe Anna") | nett: simpático — o "nice" do dia a dia para pessoas ; freundlich: simpático, cortês — atitude, atendimento ; lieb: querido, carinhoso — mais caloroso ("Liebe Anna")
+kennen, wissen, können | kennen: to know a person, place or thing — be familiar with it ("Ich kenne Berlin") ; wissen: to know a fact or information ("Ich weiß, dass…", "Weißt du, wo…?") ; können: to know how to do something, to be able to ("Ich kann schwimmen") | kennen: conhecer pessoas, lugares, coisas ("Ich kenne Berlin") ; wissen: saber factos ("Ich weiß, dass…") ; können: saber fazer, conseguir ("Ich kann schwimmen")
+gehen, fahren, laufen | gehen: to go on foot, or to go in general ("Ich gehe ins Kino") ; fahren: to go by vehicle — car, train, bike ("Ich fahre nach Berlin") ; laufen: to walk or run — on foot, often longer distances or running | gehen: ir a pé ou ir em geral ; fahren: ir de transporte — carro, comboio, bicicleta ; laufen: andar ou correr a pé
+lernen, studieren | lernen: to learn, to study for something — at any level ("Ich lerne Deutsch") ; studieren: to study a subject at university ("Ich studiere Informatik") | lernen: aprender, estudar — qualquer nível ; studieren: estudar na universidade, tirar um curso
+sagen, sprechen, reden, erzählen | sagen: to say something specific ("Er sagt, dass…") ; sprechen: to speak (a language), to talk formally ("Ich spreche Deutsch") ; reden: to talk, chat — more informal ("Wir reden über alles") ; erzählen: to tell a story or what happened | sagen: dizer algo concreto ; sprechen: falar (uma língua), falar mais formalmente ; reden: conversar, falar — mais informal ; erzählen: contar uma história ou o que aconteceu
+legen, stellen, setzen, hängen | legen: to put something lying flat ("das Buch auf den Tisch legen") ; stellen: to put something standing upright ("die Flasche in den Kühlschrank stellen") ; setzen: to seat, to put in a sitting position ("sich setzen" = to sit down) ; hängen: to hang something up | legen: pôr deitado ; stellen: pôr de pé ; setzen: sentar, pôr sentado ("sich setzen" = sentar-se) ; hängen: pendurar
+liegen, stehen, sitzen | liegen: to be lying (flat) somewhere — also "to be located" ; stehen: to be standing (upright) — also "to be written" ; sitzen: to be sitting | liegen: estar deitado, estar situado ; stehen: estar de pé, estar escrito ; sitzen: estar sentado
+bekommen, werden | bekommen: to get, to receive — NOT "to become" ("Ich bekomme ein Geschenk") ; werden: to become ("Ich werde Arzt") | bekommen: receber, obter — NÃO é "tornar-se" ; werden: tornar-se ("Ich werde Arzt")
+wollen, werden | wollen: to want — "Ich will" means I want, NOT I will ; werden: will (future), to become ("Ich werde kommen") | wollen: querer — "Ich will" = eu quero (não é futuro) ; werden: futuro, tornar-se ("Ich werde kommen")
+also, auch | also: so, therefore — NOT "also" ("Also gehen wir") ; auch: also, too ("Ich komme auch") | also: então, portanto — NÃO é "também" ; auch: também
+bald, schnell | bald: soon — NOT "bald" (hairless) ; schnell: fast, quickly | bald: em breve ; schnell: rápido, depressa
+fast, schnell | fast: almost — NOT "fast" ("fast fertig") ; schnell: fast, quick ("ein schnelles Auto") | fast: quase ("fast fertig") ; schnell: rápido
+still, noch | still: quiet, calm — NOT "still" (yet) ("Sei still!") ; noch: still, yet ("Ich warte noch") | still: calado, sossegado ; noch: ainda
+Gift, Geschenk | Gift: poison — NOT a gift! ; Geschenk: a present, a gift | Gift: veneno ; Geschenk: presente, prenda
+Rock, Stein, Felsen | Rock: a skirt (also rock music) — not a stone ; Stein: a stone, a rock you can hold ; Felsen: a large rock, a cliff | Rock: saia (e música rock) ; Stein: pedra ; Felsen: rochedo, rocha grande
+Art, Kunst | Art: kind, type, way — NOT "art" ("diese Art von Musik") ; Kunst: art ("moderne Kunst") | Art: tipo, maneira ; Kunst: arte
+Kind, freundlich, nett | Kind: a child — NOT the adjective "kind" ; freundlich: kind, friendly ; nett: nice, kind | Kind: criança ; freundlich: simpático, amável ; nett: simpático
+Brief, kurz | Brief: a letter (mail) — NOT "brief" ; kurz: short, brief | Brief: carta ; kurz: curto, breve
+Chef, Koch | Chef: boss, manager — NOT a cook ; Koch: a cook, a chef in a kitchen | Chef: chefe ; Koch: cozinheiro
+aktuell, eigentlich | aktuell: current, up to date — NOT "actually" ; eigentlich: actually, really | aktuell: atual ; eigentlich: na verdade
+eventuell, schließlich | eventuell: possibly, perhaps — NOT "eventually" ; schließlich: eventually, finally, after all | eventuell: possivelmente, talvez ; schließlich: finalmente, afinal
+sensibel, vernünftig | sensibel: sensitive — NOT "sensible" ; vernünftig: sensible, reasonable | sensibel: sensível ; vernünftig: sensato, razoável
+spenden, ausgeben | spenden: to donate — NOT "to spend" ; ausgeben: to spend (money) | spenden: doar ; ausgeben: gastar
+Fabrik, Stoff | Fabrik: a factory — NOT "fabric" ; Stoff: fabric, material, substance | Fabrik: fábrica ; Stoff: tecido, material
+Handy, Telefon | Handy: a mobile phone — NOT "handy" (that's "praktisch") ; Telefon: a telephone, the landline | Handy: telemóvel ; Telefon: telefone
+der See, die See, das Meer | der See: a lake ; die See: the sea (formal, poetic: "an der See") ; das Meer: the sea, the ocean — the everyday word | der See: lago ; die See: o mar (formal) ; das Meer: o mar — palavra do dia a dia
+die Bank, das Ufer | die Bank: a bank (money) or a bench ; das Ufer: a river bank, a shore | die Bank: banco (dinheiro ou para sentar) ; das Ufer: margem do rio
+warten, erwarten | warten: to wait ("auf den Bus warten") ; erwarten: to expect ("Ich erwarte einen Anruf") | warten: esperar (aguardar) ; erwarten: esperar (contar com)
+fragen, bitten | fragen: to ask a question ("nach dem Weg fragen") ; bitten: to ask for something, to request ("um Hilfe bitten") | fragen: perguntar ; bitten: pedir
+leihen, mieten, vermieten | leihen: to lend or borrow (for free) ; mieten: to rent (you pay to use) ; vermieten: to rent out (you are the owner) | leihen: emprestar, pedir emprestado ; mieten: arrendar, alugar (pagar) ; vermieten: arrendar a alguém (ser o dono)
+machen, tun | machen: to make or do — the everyday verb ("Hausaufgaben machen") ; tun: to do — more abstract, set phrases ("Es tut mir leid", "Was soll ich tun?") | machen: fazer — o verbo do dia a dia ; tun: fazer — mais abstrato, expressões fixas
+denken, glauben, meinen, finden | denken: to think (a thought), to think about ; glauben: to believe, to think something is true ; meinen: to mean, to be of the opinion ; finden: to find, to think (opinion: "Ich finde das gut") | denken: pensar ; glauben: acreditar, achar ; meinen: querer dizer, ser da opinião ; finden: achar (opinião: "Ich finde das gut")
+hören, zuhören | hören: to hear (sounds reach you) ; zuhören: to listen (on purpose, with attention) | hören: ouvir ; zuhören: escutar, prestar atenção
+sehen, schauen, ansehen | sehen: to see ; schauen: to look, to watch (common in the south) ; ansehen: to look at, to watch something on purpose | sehen: ver ; schauen: olhar, ver ; ansehen: olhar para, ver com atenção
+Zeit, Mal, Uhr, Stunde | Zeit: time (in general) ; Mal: time as in occurrence ("das erste Mal") ; Uhr: o'clock, a clock ("um drei Uhr") ; Stunde: an hour, a lesson | Zeit: tempo ; Mal: vez ("das erste Mal") ; Uhr: horas, relógio ; Stunde: hora (duração), aula
+Leute, Mensch, Person | Leute: people (always plural) ; Mensch: a human being, a person ; Person: a person (counting, formal) | Leute: pessoas (sempre plural) ; Mensch: ser humano ; Person: pessoa (contagem, formal)
+Geschäft, Laden, Firma | Geschäft: a shop, or a business deal ; Laden: a (small) shop ; Firma: a company, a firm | Geschäft: loja ou negócio ; Laden: loja (pequena) ; Firma: empresa
+spät, Verspätung | spät: late (time of day) ; Verspätung: a delay (trains, flights) | spät: tarde ; Verspätung: atraso
+wer, wo, wohin | wer: who — NOT "where" ; wo: where (location) ; wohin: where to (direction) | wer: quem ; wo: onde ; wohin: para onde
+ob, wenn, als | ob: whether, if (yes/no question) ; wenn: if, when, whenever ; als: when (one time in the past) | ob: se (pergunta sim/não) ; wenn: se, quando, sempre que ; als: quando (uma vez, no passado)
+seit, vor | seit: since, for (still going on: "seit drei Jahren") ; vor: ago ("vor drei Jahren") | seit: desde, há (ainda continua) ; vor: há (já passou: "vor drei Jahren")

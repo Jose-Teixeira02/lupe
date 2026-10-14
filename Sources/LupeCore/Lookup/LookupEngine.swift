@@ -31,6 +31,8 @@ public struct LookupResult: Sendable, Identifiable {
     public var expression: ContextExpression?
     /// German word on screen: the meaning the translator used in this sentence ("bench" for "Bank").
     public var senseHere: String?
+    /// Words this one is easily mixed up with ("schön" vs "nett").
+    public var confusables: [Confusable] = []
 
     /// Key used for the word bank.
     public var cardKey: String { entry?.id ?? Card.key(for: headword) }
@@ -105,6 +107,13 @@ public final class LookupEngine: @unchecked Sendable {
 
     public func lookup(word rawWord: String, context: String, wordRange: Range<String.Index>? = nil,
                        languageHint: String? = nil) async -> LookupResult {
+        var result = await lookupInContext(word: rawWord, context: context, wordRange: wordRange, languageHint: languageHint)
+        if let e = result.entry { result.confusables = confusables(for: e) }
+        return result
+    }
+
+    private func lookupInContext(word rawWord: String, context: String, wordRange: Range<String.Index>?,
+                                 languageHint: String?) async -> LookupResult {
         let word = TextTools.clean(rawWord)
         let rawContext = context
         let context = rawContext.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -506,10 +515,15 @@ public final class LookupEngine: @unchecked Sendable {
         entries = entries.filter { seen.insert(Lexicon.fold($0.lemma)).inserted }
         guard entries.count > 1 else { return [] }
         return entries.prefix(5).map { e in
-            // Show which sense each one is: "bank (river)" rather than just "bank".
-            let gloss = (e.glosses[language] ?? []).first { Lexicon.glossKeys($0, language: language, pos: e.pos).contains { $0.contains(token.lemma.lowercased()) || $0.contains(token.text.lowercased()) } }
-                ?? e.gloss(language)
-            return WordGloss(surface: e.lemma, entry: e, display: lexicon.display(e), meaning: gloss)
+            // What sets each one apart: the hand-written note, else the matching sense plus the others
+            // ("bank (river)", "nice, beautiful, pretty") rather than the same word over and over.
+            if let note = curatedNote(for: e, language: language) {
+                return WordGloss(surface: e.lemma, entry: e, display: lexicon.display(e), meaning: note)
+            }
+            let glosses = e.glosses[language] ?? []
+            let matching = glosses.first { Lexicon.glossKeys($0, language: language, pos: e.pos).contains { $0.contains(token.lemma.lowercased()) || $0.contains(token.text.lowercased()) } }
+            let ordered = (matching.map { [$0] } ?? []) + glosses.filter { $0 != matching }
+            return WordGloss(surface: e.lemma, entry: e, display: lexicon.display(e), meaning: ordered.prefix(3).joined(separator: ", "))
         }
     }
 

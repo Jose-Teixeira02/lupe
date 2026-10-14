@@ -191,6 +191,21 @@ struct AskView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(r.inputLanguage == model.target ? "THIS WORD CAN MEAN" : "DEPENDING ON CONTEXT")
                     .font(.system(size: 9, weight: .bold)).tracking(0.8).foregroundStyle(.secondary)
+                if r.senses.contains(where: { ($0.meaning?.count ?? 0) > 34 }) {
+                    // Long "when to use it" notes read better as rows.
+                    VStack(alignment: .leading, spacing: 6) {
+                        ForEach(r.senses) { g in
+                            HStack(alignment: .firstTextBaseline, spacing: 10) {
+                                GenderedWord(display: g.display, gender: g.entry?.gender, pos: g.entry?.pos, size: 14)
+                                    .frame(minWidth: 90, alignment: .leading).fixedSize()
+                                Text(g.meaning ?? "").font(.system(size: 12)).foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .contentShape(Rectangle())
+                            .onTapGesture { actions.speak(g.entry?.lemma ?? g.display) }
+                        }
+                    }
+                } else {
                 FlowLayout(spacing: 6, lineSpacing: 6) {
                     ForEach(r.senses) { g in
                         HStack(spacing: 5) {
@@ -203,6 +218,7 @@ struct AskView: View {
                         .padding(.horizontal, 8).padding(.vertical, 4)
                         .background(Capsule().strokeBorder(Theme.color(for: g.entry?.pos, gender: g.entry?.gender).opacity(0.35)))
                     }
+                }
                 }
             }
         }

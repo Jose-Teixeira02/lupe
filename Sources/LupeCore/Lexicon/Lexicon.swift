@@ -53,6 +53,8 @@ public final class Lexicon: @unchecked Sendable {
     public private(set) var maxGlossWords: [String: Int] = [:]
     /// Phrases (pos `phr`) with their words as matching keys (lemmas; "sich" → any reflexive pronoun).
     public private(set) var phrasePatterns: [(entry: LexEntry, pattern: [String])] = []
+    /// Words learners mix up (`confusables.txt` in the pack).
+    public var confusableGroups: [ConfusableGroup] = []
 
     public init(info: PackInfo, entries: [LexEntry]) {
         self.info = info
@@ -90,7 +92,11 @@ public final class Lexicon: @unchecked Sendable {
                 entries.append(entry)
             }
         }
-        return Lexicon(info: info, entries: entries)
+        let lexicon = Lexicon(info: info, entries: entries)
+        if let text = try? String(contentsOf: directory.appendingPathComponent("confusables.txt"), encoding: .utf8) {
+            lexicon.confusableGroups = ConfusableGroup.parse(text)
+        }
+        return lexicon
     }
 
     /// Columns: lemma, pos, gender, forms, en, pt, cefr — separated by tabs or `|`.

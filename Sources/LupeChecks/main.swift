@@ -220,6 +220,25 @@ func run() async {
     check(expression("Ich gehe zum Supermarkt, um Brot zu kaufen.", "um") == "um … zu", "split construction um … zu")
     check(expression("Er ging, ohne ein Wort zu sagen.", "ohne") == "ohne … zu", "split construction ohne … zu")
 
+    // MARK: Don't mix up
+    section("Don't mix up")
+    check(lexicon.confusableGroups.count >= 30, "confusable groups load (\(lexicon.confusableGroups.count))")
+    let mixEngine = LookupEngine(lexicon: lexicon, translator: FakeTranslator(table: [:]))
+    let schoen = mixEngine.confusables(for: lexicon.entries(forGerman: "schön").first { $0.pos == .adjective }!)
+    check(schoen.first?.isCurrent == true && schoen.contains { $0.display == "nett" && $0.note.contains("kind") }, "schön → don't mix up with nett (kind) (got \(schoen.map(\.display)))")
+    let bekommen = mixEngine.confusables(for: lexicon.entries(forGerman: "bekommen").first!)
+    check(bekommen.contains { $0.display == "werden" }, "false friend: bekommen vs werden")
+    let lakeSea = mixEngine.confusables(for: lexicon.entry(id: "See#n")!)
+    check(lakeSea.first?.display == "der See" && lakeSea.contains { $0.display == "die See" }, "der See vs die See by gender (got \(lakeSea.map(\.display)))")
+    let lernen = mixEngine.confusables(for: lexicon.entries(forGerman: "lernen").first!)
+    check(lernen.contains { $0.display == "studieren" }, "lernen vs studieren")
+    let haus = mixEngine.confusables(for: lexicon.entries(forGerman: "Haus").first!)
+    check(!haus.contains { $0.curated } && haus.contains { $0.display == "das Gebäude" }, "fallback: words sharing a meaning (Haus ~ Gebäude) (got \(haus.map(\.display)))")
+    let tischMix = mixEngine.confusables(for: lexicon.entries(forGerman: "Tisch").first!)
+    check(tischMix.isEmpty, "nothing to mix up for Tisch")
+    let niceSenses = mixEngine.senses(ofHelper: "nice", language: "en", translation: "schön")
+    check(niceSenses.contains { $0.surface == "nett" && ($0.meaning ?? "").contains("kind") }, "Ask 'nice' explains schön vs nett")
+
     // MARK: Lookup engine (fake translator)
     section("Lookup engine")
     let fake = FakeTranslator(table: [
