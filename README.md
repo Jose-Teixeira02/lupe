@@ -29,6 +29,10 @@ menu bar. The first launch shows a short tour where you pick your languages and 
 You need macOS 26 or later and the Command Line Tools (Xcode isn't required). The German↔English and
 German↔Portuguese translation packs are already installed on this Mac.
 
+**Tip:** for a more natural pronunciation, download an *Enhanced* or *Premium* German voice in System
+Settings → Accessibility → Spoken Content → System Voice → Manage Voices. Lupe picks the best one
+installed automatically.
+
 ### Permissions (both optional)
 
 | Permission | Used for | Without it |

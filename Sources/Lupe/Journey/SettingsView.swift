@@ -45,6 +45,11 @@ struct SettingsView: View {
                     }
                 }
                 LabeledContent("Voice") { Text(Speech.shared.voiceDescription(for: model.lexicon.info.speechLanguage)) }
+                if !Speech.shared.voiceDescription(for: model.lexicon.info.speechLanguage).contains("premium")
+                    && !Speech.shared.voiceDescription(for: model.lexicon.info.speechLanguage).contains("enhanced") {
+                    Text("Tip: for a more natural German voice, download an Enhanced or Premium German voice in System Settings → Accessibility → Spoken Content → System Voice → Manage Voices.")
+                        .font(.system(size: 11)).foregroundStyle(.secondary)
+                }
                 Toggle("Slower speech for practice", isOn: $settings.slowSpeech)
             }
 
@@ -175,7 +180,7 @@ struct SettingsView: View {
     private var excludedApps: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Never read these apps").font(.system(size: 12))
-            Text(settings.excludedApps.map { $0.split(separator: ".").last.map(String.init) ?? $0 }.joined(separator: ", "))
+            Text(settings.excludedApps.map(Self.appName).joined(separator: ", "))
                 .font(.system(size: 11)).foregroundStyle(.secondary)
             Button("Exclude the app I used last") {
                 if let id = NSWorkspace.shared.runningApplications.first(where: {
@@ -186,6 +191,15 @@ struct SettingsView: View {
             }
             .buttonStyle(.link).font(.system(size: 11))
         }
+    }
+
+    /// "Bitwarden" for com.bitwarden.desktop when installed, else a readable part of the bundle id.
+    static func appName(_ bundleID: String) -> String {
+        if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) {
+            return FileManager.default.displayName(atPath: url.path).replacingOccurrences(of: ".app", with: "")
+        }
+        let parts = bundleID.split(separator: ".").map(String.init)
+        return parts.count >= 2 ? parts[parts.count - 2].capitalized : bundleID
     }
 
     private func permissionRow(_ name: String, granted: Bool, why: String, action: @escaping () -> Void) -> some View {
