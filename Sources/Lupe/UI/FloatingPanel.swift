@@ -51,7 +51,7 @@ final class HostedPanel<Content: View> {
     func place(near anchor: CGRect, gap: CGFloat = 8, preferAbove: Bool = true) {
         let size = fittingSize
         let screen = NSScreen.screens.first { $0.frame.intersects(anchor) } ?? NSScreen.main
-        let visible = screen?.visibleFrame ?? CGRect(x: 0, y: 0, width: 1440, height: 900)
+        let visible = Demo.region ?? screen?.visibleFrame ?? CGRect(x: 0, y: 0, width: 1440, height: 900)
         var x = anchor.midX - size.width / 2
         x = min(max(x, visible.minX + 8), visible.maxX - size.width - 8)
         let above = anchor.maxY + gap

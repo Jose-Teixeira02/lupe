@@ -17,6 +17,7 @@ if args.count == 4, args[1] == "--hover" {
         print("  context → \(r.contextTranslation ?? "-")")
         print("  aligned: \(r.aligned ?? "-")  confirmed: \(r.confirmedByContext)  meanings: \(r.meanings)")
         print("  don't mix up: \(r.confusables.map(\.display))")
+        if let ex = r.expression { print("  EXPRESSION [\(ex.origin)]: \(ex.german) = \(ex.meaning)  (source: \(ex.source))") }
         done.signal()
     }
     while done.wait(timeout: .now()) == .timedOut { RunLoop.main.run(until: Date().addingTimeInterval(0.02)) }

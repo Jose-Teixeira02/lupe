@@ -242,7 +242,7 @@ final class AppModel: ObservableObject {
 
     var greeting: String {
         let hour = Calendar.current.component(.hour, from: Date())
-        let name = NSFullUserName().split(separator: " ").first.map(String.init) ?? ""
+        let name = Demo.isOn ? "" : NSFullUserName().split(separator: " ").first.map(String.init) ?? ""
         let hello = hour < 11 ? "Guten Morgen" : hour < 18 ? "Guten Tag" : "Guten Abend"
         return name.isEmpty ? hello : "\(hello), \(name)"
     }

@@ -99,7 +99,8 @@ struct LookupCardView: View {
     private func ready(_ r: LookupResult) -> some View {
         let entry = r.entry
         // When the word only makes sense as part of an expression, the expression leads and the word steps back.
-        let wordIsSecondary = r.expression != nil && !r.confirmedByContext
+        // An English/Portuguese idiom from the pack ("running late" → zu spät kommen) always leads: "laufen" alone would mislead.
+        let wordIsSecondary = r.expression != nil && (!r.confirmedByContext || (r.direction == .toTarget && r.expression?.origin == .pack))
         VStack(alignment: .leading, spacing: 10) {
             if let ex = r.expression {
                 if ex.german == r.entry?.lemma {
@@ -191,7 +192,7 @@ struct LookupCardView: View {
                     }
                 }
             }
-            if !r.confusables.isEmpty { ConfusablesBox(items: r.confusables, speak: actions.speak) }
+            if !r.confusables.isEmpty, !wordIsSecondary { ConfusablesBox(items: r.confusables, speak: actions.speak) }
             if state.explaining {
                 HStack(spacing: 6) { ProgressView().controlSize(.mini); Text("Thinking…").font(.system(size: 11)).foregroundStyle(.secondary) }
             } else if let e = state.explanation {

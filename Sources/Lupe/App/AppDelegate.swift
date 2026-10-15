@@ -26,7 +26,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         termSignal = DispatchSource.makeSignalSource(signal: SIGTERM, queue: .main)
         termSignal?.setEventHandler { NSApp.terminate(nil) }
         termSignal?.resume()
-        model = AppModel(settings: LupeSettings())
+        model = AppModel(settings: Demo.isOn ? Demo.makeSettings() : LupeSettings())
+        if Demo.isOn { Demo.seed(model) }
 
         hover = HoverController(model: model)
         sprinkles = SprinkleController(model: model)
@@ -51,7 +52,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             quit: { NSApp.terminate(nil) }
         ))
 
-        registerHotKeys()
+        if !Demo.isOn { registerHotKeys() }
         services = ServiceProvider { [weak self] text in self?.ask.open(prefill: text) }
         NSApp.servicesProvider = services
         NSUpdateDynamicServices()
@@ -75,6 +76,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .store(in: &subs)
 
         warmUp()
+        if Demo.isOn {
+            let director = DemoDirector(model: model, hover: hover, ask: ask, sprinkles: sprinkles, journey: journey)
+            Task { await director.run() }
+            return
+        }
         if !model.settings.hasOnboarded {
             onboarding.show()
         }

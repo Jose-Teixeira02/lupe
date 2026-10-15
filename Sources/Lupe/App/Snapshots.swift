@@ -24,7 +24,7 @@ enum Snapshots {
         let germanCard = wait { await model.engine.lookup(word: "rufe", context: "Ich rufe dich morgen früh an.") }
         let riverCard = wait { await model.engine.lookup(word: "bank", context: "We had a picnic on the river bank.") }
         let compound = wait { await model.engine.lookup(word: "Haustür", context: "Kannst du bitte die Haustür abschließen?") }
-        let lateCard = wait { await model.engine.lookup(word: "running", context: "Sorry, I'm running late for the meeting.") }
+        let lateCard = wait { await model.engine.lookup(word: "running", context: "Sorry, I'm running late today, so let's meet after lunch.") }
         let thumbsCard = wait { await model.engine.lookup(word: "Daumen", context: "Ich drücke dir morgen die Daumen!") }
         let lockCard = wait { await model.engine.lookup(word: "Schloss", context: "Das Schloss an der Tür ist kaputt.") }
         let gaveCard = wait { await model.engine.lookup(word: "gave", context: "She gave up smoking last year.") }

@@ -212,7 +212,16 @@ extension LookupEngine {
             if token.wordClass == .verb, !isNoun {
                 // The verb of the same translated sentence, nearest to the phrase ("ich komme … zu spät" → kommen).
                 let sentence = TextTools.sentence(in: at.text, containing: first.range)
-                let sentenceRange = at.text.range(of: sentence) ?? at.text.startIndex..<at.text.endIndex
+                var sentenceRange = at.text.range(of: sentence) ?? at.text.startIndex..<at.text.endIndex
+                // Same clause only: in "ich bin zu spät, also treffen wir uns" the verb of "zu spät" is bin, not treffen.
+                let breaks = CharacterSet(charactersIn: ",;:–—")
+                let phraseEnd = phraseTokens.last?.range.upperBound ?? first.range.upperBound
+                if let before = at.text[sentenceRange.lowerBound..<first.range.lowerBound].rangeOfCharacter(from: breaks, options: .backwards) {
+                    sentenceRange = before.upperBound..<sentenceRange.upperBound
+                }
+                if phraseEnd <= sentenceRange.upperBound, let after = at.text[phraseEnd..<sentenceRange.upperBound].rangeOfCharacter(from: breaks) {
+                    sentenceRange = sentenceRange.lowerBound..<after.lowerBound
+                }
                 let anchor = germanTokens.firstIndex(of: first) ?? 0
                 let verbs = germanTokens.enumerated().compactMap { i, t -> (entry: LexEntry, distance: Int)? in
                     // Capitalised words mid-sentence are nouns ("zum Treffen"), never the verb we want.

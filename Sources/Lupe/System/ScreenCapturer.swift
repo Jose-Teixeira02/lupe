@@ -63,7 +63,7 @@ final class ScreenCapturer {
         // Hide Lupe's floating layers (tags, cards, lens) but keep its normal windows (Journey),
         // so text behind the Journey window isn't "seen through" it.
         let pid = ProcessInfo.processInfo.processIdentifier
-        let ownFloating = content.windows.filter { $0.owningApplication?.processID == pid && $0.windowLayer != 0 }
+        let ownFloating = content.windows.filter { $0.owningApplication?.processID == pid && $0.windowLayer > 0 }
         let filter = SCContentFilter(display: display, excludingWindows: ownFloating)
 
         let clipped = rect.intersection(screen.frame)

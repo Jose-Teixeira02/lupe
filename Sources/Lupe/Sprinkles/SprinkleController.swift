@@ -84,6 +84,8 @@ final class SprinkleController {
         clear()
     }
 
+    var labelCount: Int { overlays.values.reduce(0) { $0 + $1.state.labels.count } }
+
     func toggle() {
         if model.settings.sprinklesEnabled && model.sprinklesPausedUntil == nil {
             model.settings.sprinklesEnabled = false

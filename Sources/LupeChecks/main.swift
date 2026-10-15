@@ -274,6 +274,9 @@ func run() async {
           "PRIMOS in a headline → der Cousin, not verwenden (got \(capsCard.entry?.lemma ?? "-"), \(capsCard.contextTranslation ?? "no translation"))")
     let gutMix = mixEngine.confusables(for: lexicon.entries(forGerman: "gut").first { $0.pos == .adjective }!)
     check(!gutMix.contains { $0.entry?.pos != .adjective }, "similar meaning keeps to the same kind of word (got \(gutMix.map(\.display)))")
+    let lateSentence = "Sorry, I'm running late today, so let's meet after lunch."
+    let late = await askEngine.lookup(word: "running", context: lateSentence, wordRange: lateSentence.range(of: "running"))
+    check(late.expression?.german == "zu spät kommen", "“running late” is the idiom zu spät kommen (got \(late.expression?.german ?? "-"))")
     let kindHover = askEngine.confusables(for: lexicon.entries(forGerman: "nett").first!, sourceWord: "kind")
     check(kindHover.dropFirst().first?.display == "das Kind", "hovering English 'kind': the look-alike das Kind comes first (got \(kindHover.map(\.display)))")
 

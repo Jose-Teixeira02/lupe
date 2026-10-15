@@ -89,11 +89,11 @@ struct JourneyView: View {
 /// The main window. While it's open Lupe shows in the Dock and ⌘-Tab; otherwise it's menu-bar only.
 @MainActor
 final class JourneyWindowController: NSObject, NSWindowDelegate {
-    private var window: NSWindow?
+    private(set) var window: NSWindow?
     private let model: AppModel
-    private let nav = JourneyNav()
-    private lazy var review = ReviewSession(model: model)
-    private lazy var reading = ReadingState(model: model)
+    let nav = JourneyNav()
+    lazy var review = ReviewSession(model: model)
+    lazy var reading = ReadingState(model: model)
     private let words = WordsState()
     var openAsk: () -> Void = {}
     var reminderChanged: () -> Void = {}
@@ -115,8 +115,12 @@ final class JourneyWindowController: NSObject, NSWindowDelegate {
             w.contentView = NSHostingView(rootView: JourneyView(model: model, nav: nav, review: review, reading: reading, words: words,
                                                                openAsk: { [weak self] in self?.openAsk() },
                                                                reminderChanged: { [weak self] in self?.reminderChanged() }))
-            w.setFrameAutosaveName("LupeJourney")
-            if !w.setFrameUsingName("LupeJourney") { w.center() }
+            if Demo.isOn {
+                w.center() // the demo places it; don't touch your saved window position
+            } else {
+                w.setFrameAutosaveName("LupeJourney")
+                if !w.setFrameUsingName("LupeJourney") { w.center() }
+            }
             window = w
         }
         NSApp.setActivationPolicy(.regular)

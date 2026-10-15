@@ -60,6 +60,12 @@ final class HoverController {
 
     var isCardVisible: Bool { panel.isVisible }
 
+    /// A finished card is on screen (the demo waits for it).
+    var isCardReady: Bool {
+        if panel.isVisible, case .ready = state.phase { return true }
+        return false
+    }
+
     // MARK: Loop
 
     private func tick() {
@@ -68,9 +74,9 @@ final class HoverController {
         let relevant: NSEvent.ModifierFlags = [.control, .option, .command, .shift]
         let wanted = model.settings.hoverModifier.flag
         let flags = NSEvent.modifierFlags
-        let isDown: Bool = wanted == .function
+        let isDown: Bool = Demo.holdingHoverKey || (wanted == .function
             ? flags.contains(.function) && flags.intersection(relevant).isEmpty
-            : flags.intersection(relevant) == wanted
+            : flags.intersection(relevant) == wanted)
 
         if hypot(mouse.x - lastMouse.x, mouse.y - lastMouse.y) > 2 {
             lastMouse = mouse
@@ -120,7 +126,7 @@ final class HoverController {
     /// underneath them; don't look things up there. Click-through tag overlays don't count.
     private func isOverOwnPanel(_ point: CGPoint) -> Bool {
         NSApp.windows.contains { w in
-            w.isVisible && !(w is OverlayWindow) && w !== panel.panel
+            w.isVisible && !w.ignoresMouseEvents && w !== panel.panel
                 && w.level.rawValue > NSWindow.Level.normal.rawValue && w.frame.contains(point)
         }
     }

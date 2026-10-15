@@ -18,9 +18,12 @@ if let i = CommandLine.arguments.firstIndex(of: "--icon"), i + 1 < CommandLine.a
     exit(0)
 }
 
+// `Lupe --demo-video <file.mp4>` records a product tour with a throwaway profile (see Demo.swift).
+Demo.configure(arguments: CommandLine.arguments)
+
 // One Lupe at a time: two copies would fight over the shortcuts and overwrite each other's deck.
 // A second launch (another copy of the app, or opening it twice) hands over to the running one and quits.
-if let id = Bundle.main.bundleIdentifier,
+if !Demo.isOn, let id = Bundle.main.bundleIdentifier,
    let running = NSRunningApplication.runningApplications(withBundleIdentifier: id)
        .first(where: { $0.processIdentifier != ProcessInfo.processInfo.processIdentifier }) {
     if let url = running.bundleURL {

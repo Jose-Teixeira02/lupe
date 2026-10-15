@@ -7,7 +7,7 @@ import SwiftUI
 @MainActor
 final class AskController {
     private let model: AppModel
-    private let state = AskState()
+    let state = AskState()
     private var panel: HostedPanel<AskView>!
     private var previousApp: NSRunningApplication?
     private var inputSub: AnyCancellable?
@@ -49,8 +49,8 @@ final class AskController {
             previousApp = NSWorkspace.shared.frontmostApplication
             let screen = ScreenCapturer.screen(containing: NSEvent.mouseLocation) ?? NSScreen.main!
             let size = panel.fittingSize
-            let f = screen.visibleFrame
-            topLeft = CGPoint(x: (f.midX - size.width / 2).rounded(), y: (f.minY + f.height * 0.72).rounded())
+            let f = Demo.region ?? screen.visibleFrame
+            topLeft = CGPoint(x: (f.midX - size.width / 2).rounded(), y: (f.minY + f.height * (Demo.isOn ? 0.86 : 0.72)).rounded())
         }
         if let prefill {
             state.clearResults()
@@ -156,7 +156,7 @@ final class AskController {
         }
     }
 
-    private func explainCorrection() {
+    func explainCorrection() {
         guard let r = state.result, let corrected = state.corrected else { return }
         state.explaining = true
         Task {
