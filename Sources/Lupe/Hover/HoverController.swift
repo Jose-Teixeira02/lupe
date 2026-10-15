@@ -60,6 +60,12 @@ final class HoverController {
 
     var isCardVisible: Bool { panel.isVisible }
 
+    /// The card's lookup, once it's finished.
+    var cardResult: LookupResult? {
+        if case .ready(let r) = state.phase { return r }
+        return nil
+    }
+
     /// A finished card is on screen (the demo waits for it).
     var isCardReady: Bool {
         if panel.isVisible, case .ready = state.phase { return true }

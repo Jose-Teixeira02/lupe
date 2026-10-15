@@ -105,8 +105,8 @@ final class DemoStage {
 
     func show(screen: NSScreen, region: CGRect) {
         self.region = region
-        // Above desktop icons and widgets (so Lupe's OCR never reads them), below every app window.
-        let back = Self.window(frame: screen.frame, level: NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.desktopIconWindow)) + 1))
+        // Just below app windows: above the desktop, its icons and widgets (so Lupe's OCR never reads them).
+        let back = Self.window(frame: screen.frame, level: NSWindow.Level(rawValue: NSWindow.Level.normal.rawValue - 1))
         back.contentView = NSHostingView(rootView: DemoBackdrop(region: region, screen: screen.frame))
         back.orderFrontRegardless()
         backdrop = back
@@ -261,7 +261,7 @@ private struct TitleCardView: View {
                 } else {
                     Text("Hover any word. Ask anything. Remember what matters.")
                         .font(.system(size: 28, weight: .medium)).foregroundStyle(.white.opacity(0.92))
-                    Text("German today, Norwegian next  ·  Runs entirely on your Mac")
+                    Text("Runs entirely on your Mac  ·  Your words stay yours")
                         .font(.system(size: 17)).foregroundStyle(.white.opacity(0.55))
                 }
             }

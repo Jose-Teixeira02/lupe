@@ -249,9 +249,16 @@ final class DemoDirector {
         guard !Task.isCancelled else { return }
         guard occurrence < matches.count else { log("✗ can't find “\(word)”"); return }
         let r = matches[occurrence].rect
+        let previous = hover.cardResult?.id
         Demo.holdingHoverKey = true
         await glide(to: CGPoint(x: r.midX, y: r.midY))
-        if !(await waitUntil(15) { self.hover.isCardReady }) { log("✗ no card for “\(word)”") }
+        // Wait for a new card for this word (the previous one, maybe for the same word, may still be fading out).
+        if await waitUntil(15, { self.hover.cardResult.map { $0.id != previous && TextTools.clean($0.word).caseInsensitiveCompare(word) == .orderedSame } ?? false }),
+           let r = hover.cardResult {
+            log("card “\(word)” → \(r.expression?.german ?? r.headword)  |  \(r.context)")
+        } else {
+            log("✗ no card for “\(word)”")
+        }
         await pause(read)
         Demo.holdingHoverKey = false
     }
