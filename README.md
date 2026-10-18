@@ -23,7 +23,7 @@ bring it back just before you'd forget it.
 ## Quick start
 
 ```bash
-git clone https://github.com/GITHUB_USER/lupe.git
+git clone https://github.com/Jose-Teixeira02/lupe.git
 cd lupe
 scripts/build-app.sh --install
 ```
@@ -192,7 +192,7 @@ objects instead of `@State`, since the `@State` macro plugin ships only with Xco
 ## Feedback and suggestions
 
 Ideas, bugs and wishes are welcome: open an
-[issue](https://github.com/GITHUB_USER/lupe/issues). See [CONTRIBUTING.md](CONTRIBUTING.md) before
+[issue](https://github.com/Jose-Teixeira02/lupe/issues). See [CONTRIBUTING.md](CONTRIBUTING.md) before
 sending code or a language pack. This is a personal project, so answers may take a while.
 
 ## License
