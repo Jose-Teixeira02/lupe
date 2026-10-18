@@ -1,5 +1,8 @@
 # Lupe: German, everywhere you look
 
+*Created by José Teixeira, built with [Claude Code](https://www.anthropic.com/claude-code).
+Free for personal and non-commercial use (see [License](#license)).*
+
 Lupe (German for *magnifying glass*) is a macOS menu-bar companion that turns what you already read
 into German practice. It works without changing any app or system language, and everything runs
 on your Mac.
@@ -20,15 +23,18 @@ bring it back just before you'd forget it.
 ## Quick start
 
 ```bash
-cd "Lupe"
+git clone https://github.com/GITHUB_USER/lupe.git
+cd lupe
 scripts/build-app.sh --install
 ```
 
-This builds `Lupe.app`, copies it to `~/Applications` and launches it. Look for the magnifier in the
+This builds `Lupe.app`, moves it to `~/Applications` and launches it. Look for the magnifier in the
 menu bar. The first launch shows a short tour where you pick your languages and level.
 
-You need macOS 26 or later and the Command Line Tools (Xcode isn't required). The German↔English and
-German↔Portuguese translation packs are already installed on this Mac.
+You need macOS 26 or later on Apple Silicon and the Command Line Tools (`xcode-select --install`;
+Xcode isn't required). Download the translation languages you want (German plus English and/or
+Portuguese) in System Settings → General → Language & Region → Translation Languages. The grammar
+check and AI notes use Apple Intelligence when it's turned on; everything else works without it.
 
 **Tip:** for a more natural pronunciation, download an *Enhanced* or *Premium* German voice in System
 Settings → Accessibility → Spoken Content → System Voice → Manage Voices. Lupe picks the best one
@@ -45,7 +51,7 @@ Lupe never turns these on itself. The menu and Settings have buttons that open t
 Settings pane. macOS asks again every few weeks whether apps may keep recording the screen; that's
 normal.
 
-> **Permissions and rebuilds.** There's no Apple developer certificate on this Mac, so the app is
+> **Permissions and rebuilds.** Lupe is built on your Mac without an Apple developer certificate, so it's
 > signed ad hoc with a fixed identity (`identifier "local.lupe.Lupe"`). That lets permissions survive
 > rebuilds. The trade-off: another local program signed with the same identifier would match those
 > grants too. A certificate (below) binds them to your own key. If macOS ever stops honouring them
@@ -131,7 +137,7 @@ instead, with other words that share a meaning.
 - **The vocabulary size on the Path is an estimate:** the words of your starting level plus every word
   you've proven since.
 
-## Adding a language (Norwegian is next 🇳🇴)
+## Adding a language
 
 A language is a pack: a `pack.json` (name, flag, articles, speech voice) and `*.tsv` files with one
 word per line:
@@ -151,7 +157,7 @@ lernen, studieren | lernen: to learn, to study (any level) ; studieren: to study
 
 Put the folder in `packs/<code>/`, or in `~/Library/Application Support/Lupe/packs/<code>/` for a
 pack you don't want to rebuild for, then pick it under Settings → Languages. Translation works for
-any pair macOS supports, Norwegian Bokmål included.
+any pair macOS supports.
 
 ## Development
 
@@ -178,7 +184,20 @@ objects instead of `@State`, since the `@State` macro plugin ships only with Xco
 ## Roadmap
 
 - Browser-extension companion (exact DOM text, inline word swaps) that talks to the same deck
-- Norwegian pack
+- More language packs
 - Subtitle mode for videos (watch a region, tag the current line)
 - iPhone review over iCloud
 - Developer ID signing so permissions survive updates
+
+## Feedback and suggestions
+
+Ideas, bugs and wishes are welcome: open an
+[issue](https://github.com/GITHUB_USER/lupe/issues). See [CONTRIBUTING.md](CONTRIBUTING.md) before
+sending code or a language pack. This is a personal project, so answers may take a while.
+
+## License
+
+Copyright (c) 2026 José Teixeira. Lupe is source-available under the
+[PolyForm Noncommercial License 1.0.0](LICENSE.md): you may use, study, change and share it for
+personal and other non-commercial purposes. **Commercial use** (selling it, or building a paid product
+or service on it) **needs written permission**: open an issue to get in touch.
