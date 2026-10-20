@@ -277,6 +277,8 @@ func run() async {
     let lateSentence = "Sorry, I'm running late today, so let's meet after lunch."
     let late = await askEngine.lookup(word: "running", context: lateSentence, wordRange: lateSentence.range(of: "running"))
     check(late.expression?.german == "zu spät kommen", "“running late” is the idiom zu spät kommen (got \(late.expression?.german ?? "-"))")
+    let fluent = mixEngine.confusables(for: lexicon.entries(forGerman: "verhandlungssicher").first!)
+    check(fluent.contains { $0.display == "fließend" }, "verhandlungssicher vs fließend (got \(fluent.map(\.display)))")
     let kindHover = askEngine.confusables(for: lexicon.entries(forGerman: "nett").first!, sourceWord: "kind")
     check(kindHover.dropFirst().first?.display == "das Kind", "hovering English 'kind': the look-alike das Kind comes first (got \(kindHover.map(\.display)))")
 
@@ -406,7 +408,7 @@ func run() async {
     }
     // "Sorry, I'm running late." and "Can you look after my cat? She gave up" share a line; the sentence continues below.
     let pieces = [
-        piece("Can you look after my cat? She gave up", x: 0.42, y: 0.80, w: 0.5),
+        piece("Can you look after my cat? She gave up", x: 0.405, y: 0.80, w: 0.5), // one space after the first piece
         piece("smoking last year and turned down the offer.", x: 0.02, y: 0.76, w: 0.6),
         piece("Sorry, I'm running late.", x: 0.02, y: 0.80, w: 0.38),
     ]
@@ -434,6 +436,14 @@ func run() async {
           "a line that wraps early before a long word still joins its sentence")
     let columns = [piece("Left column text here", x: 0.02, y: 0.5, w: 0.3), piece("Right column far away", x: 0.7, y: 0.5, w: 0.28)]
     check(TextHitFinder.visualLines(columns, aspect: 1000.0 / 600).count == 2, "distant columns are not merged")
+    // An open menu next to a list: same row, a few line heights apart (a LinkedIn form over its job list).
+    let menu = [piece("Alemanha (Remoto)", x: 0.02, y: 0.5, w: 0.18), piece("Verhandlungssicher", x: 0.255, y: 0.5, w: 0.16)]
+    check(TextHitFinder.visualLines(menu, aspect: 1000.0 / 600).count == 2, "a menu item isn't glued to the list beside it")
+    check(LookupEngine.hasAdjectiveEnding("Verhandlungssicher") && LookupEngine.hasAdjectiveEnding("arbeitslos")
+          && !LookupEngine.hasAdjectiveEnding("Sommerfest") && !LookupEngine.hasAdjectiveEnding("Königreich"),
+          "adjective endings (verhandlungssicher) without noun look-alikes (Sommerfest, Königreich)")
+    check(lexicon.bestEntry(forGerman: "Verhandlungssicher")?.pos == .adjective, "Verhandlungssicher as a menu item is the adjective")
+
 
     // MARK: Live (on-device Translation)
     if live {

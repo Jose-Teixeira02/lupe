@@ -90,6 +90,15 @@ public final class LookupEngine: @unchecked Sendable {
     // MARK: Language
 
     /// Detects the language of a line, using the lexicon to settle short or ambiguous strings.
+    /// German adjective endings that are never nouns in practice (compounds like verhandlungssicher, arbeitslos).
+    /// Endings that are also nouns (-bar: Strandbar, -fest: Sommerfest, -reich: Königreich) are left out.
+    public static func hasAdjectiveEnding(_ word: String) -> Bool {
+        let w = word.lowercased()
+        guard w.count >= 8, !w.contains(" ") else { return false }
+        return ["sicher", "fähig", "mäßig", "haft", "würdig", "bereit", "gerecht", "freundlich", "orientiert",
+                "bedürftig", "pflichtig", "kundig", "los", "frei", "voll"].contains { w.hasSuffix($0) }
+    }
+
     public func language(of text: String, word: String? = nil) -> String {
         let candidates = languages
         // A lone word is too little for the recognizer ("rent" looks German to it): the dictionary decides first.
@@ -200,11 +209,18 @@ public final class LookupEngine: @unchecked Sendable {
         } else {
             // Not in the pack (or a compound): translate the lemma into every helper language.
             let source = entry?.lemma ?? token?.lemma ?? word
+            // Adjectives are translated in lowercase: a capital makes the translator read a noun.
+            let query = entry == nil && Self.hasAdjectiveEnding(source) ? source.lowercased() : source
             for h in helpers {
-                if let t = try? await translator.translate(source, from: target, to: h) { meanings[h] = Self.wordGloss(t) }
+                if let t = try? await translator.translate(query, from: target, to: h) { meanings[h] = Self.wordGloss(t) }
             }
             if entry != nil {
                 entry?.glosses = meanings.mapValues { [$0] }
+            } else if lexicon.info.capitalizeNouns, Self.hasAdjectiveEnding(source) {
+                // "Verhandlungssicher" at the start of a menu item is still an adjective, not a noun.
+                let lemma = source.lowercased()
+                entry = LexEntry(rank: 40_000, lemma: lemma, pos: .adjective, gender: nil, forms: "",
+                                 glosses: meanings.mapValues { [$0] }, cefr: "C1", id: "\(lemma)#adj")
             } else if lexicon.info.capitalizeNouns, word.first?.isUppercase == true, !sentenceInitial || token?.wordClass == .noun,
                       let english = meanings["en"], let gender = await guessGender(of: source, english: english) {
                 // A noun the pack doesn't know: "the thumb" → "der Daumen" gives us its article.

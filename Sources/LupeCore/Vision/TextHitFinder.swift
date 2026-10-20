@@ -48,7 +48,9 @@ public enum TextHitFinder {
                 guard overlap > 0.5 * min(g.height, r.height), !(g.minX < r.maxX && r.minX < g.maxX) else { return false }
                 // Horizontal gap measured in line heights; columns are much further apart than words.
                 let gap = (r.minX >= g.maxX ? r.minX - g.maxX : g.minX - r.maxX) * aspect / max(min(g.height, r.height), 0.0001)
-                return gap < 4
+                // A sentence split by OCR has a space-sized gap (~0.3 line heights); text beside an open dialog or
+                // menu (a job list behind a LinkedIn form) sits 1.4+ heights away.
+                return gap < 1.0
             }
             if let j = match {
                 groups[j].append(i)
