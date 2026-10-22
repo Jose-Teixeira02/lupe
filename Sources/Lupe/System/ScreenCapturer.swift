@@ -64,7 +64,14 @@ final class ScreenCapturer {
         // so text behind the Journey window isn't "seen through" it.
         let pid = ProcessInfo.processInfo.processIdentifier
         let ownFloating = content.windows.filter { $0.owningApplication?.processID == pid && $0.windowLayer > 0 }
-        let filter = SCContentFilter(display: display, excludingWindows: ownFloating)
+        let filter: SCContentFilter
+        if Demo.isOn {
+            // The demo reads only what it records (Lupe and TextEdit), even if another window drifts on top.
+            let apps = content.applications.filter { $0.processID == pid || $0.bundleIdentifier == "com.apple.TextEdit" }
+            filter = SCContentFilter(display: display, including: apps, exceptingWindows: ownFloating)
+        } else {
+            filter = SCContentFilter(display: display, excludingWindows: ownFloating)
+        }
 
         let clipped = rect.intersection(screen.frame)
         guard !clipped.isNull, clipped.width > 4, clipped.height > 4 else { throw CaptureError.noDisplay }

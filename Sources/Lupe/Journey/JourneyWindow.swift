@@ -116,7 +116,8 @@ final class JourneyWindowController: NSObject, NSWindowDelegate {
                                                                openAsk: { [weak self] in self?.openAsk() },
                                                                reminderChanged: { [weak self] in self?.reminderChanged() }))
             if Demo.isOn {
-                w.center() // the demo places it; don't touch your saved window position
+                // The demo places it; don't touch your saved window position.
+                if let f = Demo.journeyFrame { w.setFrame(f, display: false) } else { w.center() }
             } else {
                 w.setFrameAutosaveName("LupeJourney")
                 if !w.setFrameUsingName("LupeJourney") { w.center() }

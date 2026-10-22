@@ -99,6 +99,7 @@ final class DemoDirector {
         region = CGRect(x: (f.midX - width / 2).rounded(), y: (f.midY - height / 2).rounded(), width: width, height: height)
         // Cards and the Ask bar stay inside the frame, above the caption band.
         Demo.region = CGRect(x: region.minX, y: region.minY + 76, width: region.width, height: region.height - 76)
+        Demo.journeyFrame = CGRect(x: (region.midX - 520).rounded(), y: (region.midY - 345 + 24).rounded(), width: 1040, height: 690)
         stage.show(screen: screen, region: region)
 
         guard let doc = documentFrame() else {
@@ -144,7 +145,7 @@ final class DemoDirector {
         ("bank", "The budget is approved, and the payment from the bank should arrive on Friday."),
         ("bank", "By the way, our team picnic by the river bank was great!"),
         ("schön", "Das Wetter war wirklich schön, und das neue Team ist sehr nett."),
-        ("Daumen", "Ich drücke dir die Daumen für die Präsentation morgen."),
+        ("verhandlungssicher", "PS: Für die neue Stelle in München suchen wir jemanden, der verhandlungssicher Englisch spricht."),
     ]
     static let askEnglish = "The meeting is postponed until Monday."
     static let askGerman = "Ich habe gestern nach Berlin gefahren."
@@ -167,8 +168,8 @@ final class DemoDirector {
         // Hover: German → English
         stage.caption([.text("German too: meaning, article, and the words people mix up")])
         await hoverWord("schön", read: 4.4)
-        stage.caption([.text("Idioms are recognised as idioms")])
-        await hoverWord("Daumen", read: 3.6)
+        stage.caption([.text("Job ads too:"), .em("verhandlungssicher"), .text("means business fluent")])
+        await hoverWord("verhandlungssicher", read: 4.0)
         await glide(to: CGPoint(x: region.maxX - 60, y: region.maxY - 60))
         hideCursor()
         await pause(0.5)
@@ -198,7 +199,7 @@ final class DemoDirector {
         stage.caption([.key("⌃"), .key("⌥"), .key("I"), .text("Sprinkles: German words on what you’re already reading")])
         sprinkles.toggle()
         _ = await waitUntil(15) { self.sprinkles.labelCount > 0 }
-        await pause(3.6)
+        await pause(3.2)
         sprinkles.toggle()
         await pause(0.6)
 
@@ -231,7 +232,7 @@ final class DemoDirector {
 
         stage.caption([.text("Your path from A1 to B2, one word at a time")])
         await clickInJourney("Path") { self.journey.nav.section = .path }
-        await pause(3.2)
+        await pause(2.8)
 
         // End
         stage.caption([])

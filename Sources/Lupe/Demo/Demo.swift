@@ -17,6 +17,8 @@ enum Demo {
     static var holdingHoverKey = false
     /// The recorded area in Cocoa points (bottom-left origin); panels are kept inside it.
     static var region: CGRect?
+    /// Where the Journey window opens in the demo (set before it's shown, so it never jumps into place).
+    static var journeyFrame: CGRect?
     static let documentName = "Project Alpine"
 
     /// Called from main before anything reads paths or settings.
